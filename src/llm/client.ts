@@ -66,6 +66,7 @@ export function usageFor(db: Db, investigationId: string): Usage {
 export function createChat(db: Db, limits: Limits): Chat {
   // The proxy reports cost in response headers, which the SDK does not surface, so they are read here.
   let lastCost: number | null = null;
+  let lastSplit: { prompt?: number; completion?: number } = {};
   const client = wrapOpenAI(
     new OpenAI({
       baseURL: process.env.LITELLM_BASE_URL,
@@ -73,8 +74,12 @@ export function createChat(db: Db, limits: Limits): Chat {
       maxRetries: 3,
       fetch: async (url, init) => {
         const res = await fetch(url, init);
-        const cost = Number(res.headers.get('x-litellm-response-cost'));
-        lastCost = res.ok && Number.isFinite(cost) ? cost : null;
+        const header = (name: string) => {
+          const value = Number(res.headers.get(name));
+          return res.ok && res.headers.has(name) && Number.isFinite(value) ? value : undefined;
+        };
+        lastCost = header('x-litellm-response-cost') ?? null;
+        lastSplit = { prompt: header('x-litellm-response-cost-input'), completion: header('x-litellm-response-cost-output') };
         return res;
       },
     }),
@@ -90,7 +95,7 @@ export function createChat(db: Db, limits: Limits): Chat {
     }
     const model = activeModel();
     // The wrapped client traces the call itself; this span adds the cost, which neatlogs does not price for LiteLLM model names.
-    return traced('llm.chat', 'CHAIN', { model, state: ctx.state, step: ctx.step }, async (set) => {
+    return traced(`llm.${ctx.step.split(':')[0]}`, 'CHAIN', { model, state: ctx.state, step: ctx.step }, async (set) => {
       const t0 = Date.now();
       const res = await client.chat.completions.create({
         model,
@@ -105,7 +110,17 @@ export function createChat(db: Db, limits: Limits): Chat {
       const completionTokens = res.usage?.completion_tokens ?? 0;
       const costUsd = lastCost;
       record.run(ctx.investigationId, ctx.state, ctx.step, model, promptTokens, completionTokens, costUsd, Date.now() - t0, new Date().toISOString());
-      set({ prompt_tokens: promptTokens, completion_tokens: completionTokens, cost_usd: costUsd ?? undefined, latency_ms: Date.now() - t0 });
+      set({
+        prompt_tokens: promptTokens,
+        completion_tokens: completionTokens,
+        cost_usd: costUsd ?? undefined,
+        latency_ms: Date.now() - t0,
+        // The same cost under neatlogs' own attribute names. The model-call span itself is created
+        // inside the wrapped client and cannot be reached from here, so they go on this enclosing span.
+        'neatlogs.llm.cost_usd': costUsd ?? undefined,
+        'neatlogs.llm.cost.prompt': lastSplit.prompt,
+        'neatlogs.llm.cost.completion': lastSplit.completion,
+      });
       return { message, promptTokens, completionTokens, costUsd };
     }, { messages: request.messages.length, tool_choice: request.toolChoice ?? 'auto' });
   };

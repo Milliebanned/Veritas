@@ -232,7 +232,7 @@ export function createImpactHandler(deps: { chat?: Chat; provider?: ImpactProvid
             maxToolCalls: ctx.limits.maxToolCallsPerStep,
           });
           const affectedCount = loop.result.sites.filter((s) => s.verdict === 'affected').length;
-          set({ tool_calls: loop.toolCalls.length, turns: loop.turns, cost_usd: loop.costUsd, affected_sites: affectedCount });
+          set({ tool_calls: loop.toolCalls.length, turns: loop.turns, cost_usd: loop.costUsd, affected_sites: affectedCount, 'neatlogs.agent.cost_usd': loop.costUsd, 'neatlogs.agent.num_turns': loop.turns });
           note('impact of {package}: {affected} affected site(s). {summary}', { package: candidate.package, affected: affectedCount, summary: loop.result.summary });
           return { report: loop.result, toolCalls: loop.toolCalls, turns: loop.turns, costUsd: loop.costUsd, promptVersion: prompt.version };
         }),

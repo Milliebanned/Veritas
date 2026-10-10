@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { flushAllDetailed, getDeliveryDiagnostics, init, log, setTraceOutput, shutdown, trace } from 'neatlogs';
 
 type Kind = 'WORKFLOW' | 'CHAIN' | 'TOOL' | 'AGENT' | 'GUARDRAIL' | 'EVALUATOR';
@@ -69,6 +70,25 @@ export async function shutdownTracing(): Promise<{ delivered: boolean; droppedSp
 /** Lets the body of a span add attributes it only knows once it has run, such as an outcome or a cost. */
 export type SetAttrs = (attrs: Attrs) => void;
 
+/** Attributes neatlogs defines keep their own names; everything else is Veritas's and gets a prefix. */
+const attrName = (key: string) => (key.startsWith('neatlogs.') ? key : `veritas.${key}`);
+
+const HERE = fileURLToPath(import.meta.url);
+
+/**
+ * Where in Veritas's source the span was opened, so a failing span in neatlogs points at
+ * the code behind it. (The SDK drops OpenTelemetry's `code.*` attributes, so these are `veritas.code_*`.)
+ */
+function callSite(): Attrs {
+  const frames = (new Error().stack ?? '').split('\n').slice(1);
+  for (const frame of frames) {
+    const match = /at (?:async )?(?:(.+?) \()?(?:file:\/\/)?(\/[^():]+):(\d+):\d+\)?$/.exec(frame.trim());
+    if (!match?.[2] || match[2] === HERE || match[2].includes('/node_modules/')) continue;
+    return { code_file: relative(process.cwd(), match[2]), code_line: Number(match[3]), code_function: match[1]?.replace(/^Object\./, '') };
+  }
+  return {};
+}
+
 /**
  * Runs fn inside a named span. The span records `input` (the attributes, unless a fuller
  * input is given) and fn's return value as its output, so a trace shows what went into
@@ -84,16 +104,25 @@ export async function traced<T>(
 ): Promise<T> {
   if (!enabled) return fn(() => undefined);
   const { attributes, ...options } = extras;
+  const site = callSite();
   return trace({ name, kind, input: input ?? attrs, ...options }, async (span) => {
     const set: SetAttrs = (more) => {
       for (const [k, v] of Object.entries(more)) {
-        if (v !== undefined) span.setAttribute(`veritas.${k}`, v);
+        if (v !== undefined) span.setAttribute(attrName(k), v);
       }
     };
-    set(attrs);
+    set({ ...attrs, ...site });
     if (kind === 'TOOL') span.setAttribute('neatlogs.tool.name', name.replace(/^tool\./, ''));
     for (const [k, v] of Object.entries(attributes ?? {})) span.setAttribute(k, v);
-    return fn(set);
+    try {
+      return await fn(set);
+    } catch (err) {
+      // neatlogs' own failure markers, so failed tools and agents are counted as such.
+      span.setAttribute('neatlogs.error.message', err instanceof Error ? `${err.name}: ${err.message}` : String(err));
+      if (kind === 'TOOL') span.setAttribute('neatlogs.tool.is_error', true);
+      if (kind === 'AGENT') span.setAttribute('neatlogs.agent.is_error', true);
+      throw err;
+    }
   });
 }
 
