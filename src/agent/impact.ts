@@ -61,7 +61,7 @@ const MAX_SOURCE_CHARS = 24_000;
 export function readFileTool(dir: string): LoopTool {
   return {
     name: 'read_file',
-    description: `Read a source file from the project, with line numbers. Returns at most ${MAX_FILE_LINES} lines; pass start_line to read further.`,
+    description: `Read a source file from the project. Each line is shown as "<line number>| <text>": everything after the bar and one space is the exact text of the line, including its indentation. Returns at most ${MAX_FILE_LINES} lines; pass start_line to read further.`,
     parameters: {
       type: 'object',
       properties: { path: { type: 'string', description: 'Path relative to the project root' }, start_line: { type: 'integer', minimum: 1 } },
@@ -74,7 +74,8 @@ export function readFileTool(dir: string): LoopTool {
       const start = Math.max(1, Number(args.start_line) || 1);
       const shown = lines.slice(start - 1, start - 1 + MAX_FILE_LINES);
       const more = start - 1 + shown.length < lines.length ? `\n[${lines.length - (start - 1 + shown.length)} more lines]` : '';
-      return shown.map((line, i) => `${String(start + i).padStart(4)}  ${line}`).join('\n') + more;
+      // A bar marks where the line number ends. With spaces alone the model could not tell padding from indentation and copied two spaces too many.
+      return shown.map((line, i) => `${start + i}| ${line}`).join('\n') + more;
     },
   };
 }
