@@ -1,0 +1,16 @@
+$ entire graph impact --repo . --symbol renderNote
+# Run inside the Veritas workspace for benchmark case 03-marked-default-export, 2026-10-10
+Impact: renderNote (src/render.js:3) def=3 span=3-5 [function]
+Blast radius: 1 caller (1 direct, 0 transitive), 1 callee, 0 type consumers, 0 data flows, 0 co-change files, 0 siblings.
+Callers (1 direct, 0 transitive; who breaks if behavior changes):
+- render.test.js (test/render.test.js)
+Callees (1; what it depends on):
+- marked.marked
+Type consumers (0 in, 0 out; USES_TYPE/PARAM_TYPE/RETURNS_TYPE):
+- none
+Data flows (0 in, 0 out):
+- none
+Co-change coupling (0; files that historically change with src/render.js):
+- none
+Same-container siblings (0):
+- none

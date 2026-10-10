@@ -1,0 +1,158 @@
+{
+  "ran_at": "2026-10-10T15:32:34.016Z",
+  "model": "claude-haiku",
+  "node": "v24.20.0",
+  "verdicts_correct": 8,
+  "cases": 8,
+  "affected_file_precision": [
+    11,
+    11
+  ],
+  "affected_file_recall": [
+    11,
+    11
+  ],
+  "cost_usd": 0.0893,
+  "tokens": 57585,
+  "cases_detail": [
+    {
+      "case": "01-chalk-esm-only",
+      "expected": "affected",
+      "verdict": "affected",
+      "correct": true,
+      "expected_files": [
+        "src/banner.js",
+        "src/format.js"
+      ],
+      "reported_files": [
+        "src/banner.js",
+        "src/format.js"
+      ],
+      "llm_calls": 2,
+      "cost_usd": 0.0099,
+      "findings": [
+        "breaking:potential:0.545"
+      ]
+    },
+    {
+      "case": "02-node-fetch-esm-only",
+      "expected": "affected",
+      "verdict": "affected",
+      "correct": true,
+      "expected_files": [
+        "src/client.js",
+        "src/health.js"
+      ],
+      "reported_files": [
+        "src/client.js",
+        "src/health.js"
+      ],
+      "llm_calls": 2,
+      "cost_usd": 0.0098,
+      "findings": [
+        "breaking:potential:0.725"
+      ]
+    },
+    {
+      "case": "03-marked-default-export",
+      "expected": "affected",
+      "verdict": "affected",
+      "correct": true,
+      "expected_files": [
+        "src/render.js"
+      ],
+      "reported_files": [
+        "src/render.js"
+      ],
+      "llm_calls": 2,
+      "cost_usd": 0.0133,
+      "findings": [
+        "advisory:confirmed:0.733",
+        "breaking:potential:0.485"
+      ]
+    },
+    {
+      "case": "04-uuid-deep-imports",
+      "expected": "affected",
+      "verdict": "affected",
+      "correct": true,
+      "expected_files": [
+        "src/ids.js",
+        "src/keys.js"
+      ],
+      "reported_files": [
+        "src/ids.js",
+        "src/keys.js"
+      ],
+      "llm_calls": 2,
+      "cost_usd": 0.0124,
+      "findings": [
+        "advisory:confirmed:0.645",
+        "breaking:potential:0.545",
+        "deprecation:potential:0.308"
+      ]
+    },
+    {
+      "case": "05-express-removed-apis",
+      "expected": "affected",
+      "verdict": "affected",
+      "correct": true,
+      "expected_files": [
+        "src/app.js",
+        "src/routes/items.js"
+      ],
+      "reported_files": [
+        "src/app.js",
+        "src/routes/items.js"
+      ],
+      "llm_calls": 2,
+      "cost_usd": 0.0175,
+      "findings": [
+        "breaking:potential:0.665"
+      ]
+    },
+    {
+      "case": "06-lodash-advisory",
+      "expected": "affected",
+      "verdict": "affected",
+      "correct": true,
+      "expected_files": [
+        "src/labels.js",
+        "src/settings.js"
+      ],
+      "reported_files": [
+        "src/labels.js",
+        "src/settings.js"
+      ],
+      "llm_calls": 0,
+      "cost_usd": 0,
+      "findings": [
+        "advisory:confirmed:0.733"
+      ]
+    },
+    {
+      "case": "07-control-unused-api",
+      "expected": "not_affected",
+      "verdict": "not_affected",
+      "correct": true,
+      "expected_files": [],
+      "reported_files": [],
+      "llm_calls": 3,
+      "cost_usd": 0.0264,
+      "findings": [
+        "breaking:not_affected:null"
+      ]
+    },
+    {
+      "case": "08-control-outdated-only",
+      "expected": "no_finding",
+      "verdict": "no_finding",
+      "correct": true,
+      "expected_files": [],
+      "reported_files": [],
+      "llm_calls": 0,
+      "cost_usd": 0,
+      "findings": []
+    }
+  ]
+}

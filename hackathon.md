@@ -65,6 +65,11 @@ Still to check by hand: whether Entire checkpoints open in a logged-out browser,
 - Milestone 3: the first three agent states are real. INTAKE copies or clones the repository into a private workspace with a baseline commit. INVENTORY reads `package.json` and `package-lock.json` and runs `npm audit` against the lockfile. INTEL looks up each direct dependency in the npm registry, fetches release notes for every major version crossed (GitHub release, else the changelog section, plus a linked migration guide), fetches published advisories from the GitHub Advisory Database, and records candidate findings with their sources. No model is used yet.
 - Tests that ran: `npx vitest run` — 34 passed, 0 failed (parsers against real recorded responses, retry and token fallback, the three states with recorded tools, a source that cannot be reached, resume without repeated lookups). `npx tsc --noEmit` clean.
 - Ran for real on all 8 benchmark repositories: 10 candidate findings with 46 sources, every source read from its URL. The control with only an outdated package produced no finding. Summary in `evidence/m3/inventory-and-sources.json`.
+- Milestone 4: IMPACT and PRIORITIZE are real, and the agent now uses the model. IMPACT builds a usage map from `entire graph edges` (import sites and calls into each package), with a source scan as fallback. For each breaking-change candidate the model works in a bounded tool loop (`read_file`, `search_code`, `find_callers` backed by `entire graph neighbors`, at most 12 calls) and must finish with a validated `report_impact` submission that names a verdict and a reason per site. Paths from the model are checked against the workspace. PRIORITIZE scores findings with the documented formula.
+- Every model call is recorded with its tokens and the cost reported by LiteLLM, and counts against a per-investigation token limit.
+- Tests that ran: `npx vitest run` — 51 passed, 0 failed (tool loop limits and error handling, graph parsing against real recorded output, fallback scan, path escape attempts, the priority formula, IMPACT with a scripted model). `npx tsc --noEmit` clean.
+- Ran for real on all 8 benchmark repositories with `claude-haiku`: 8 of 8 verdicts correct, affected-file precision 11/11 and recall 11/11, both controls correct. Total cost $0.0893 for 57,585 tokens. Results in `evidence/m4/impact-accuracy.json`; a graph impact output from a run is in `evidence/entire/m4-veritas-run-graph-impact.txt`.
+- On the express case the model named all four call sites with correct line numbers (`app.del`, `req.param`, and two `res.json(status, body)` calls). On the decoy in the marked case it correctly left `src/outline.js` out.
 
 Found in Milestone 3:
 - The express 5.0.0 release notes do not list the removed methods; they link to a migration guide. INTEL now follows such links, so the removed APIs (`app.del`, `req.param`, `res.json(obj, status)`) are in the recorded source.
@@ -74,6 +79,7 @@ Found in Milestone 3:
 
 Changed from the plan:
 - State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.
+- The fallback impact provider is a source text scan, not the TypeScript compiler API.
 - The inventory is read from the lockfile directly; `npm outdated` and `npm ls` are not used, so nothing has to be installed to list dependencies.
 
 ## Demo
@@ -82,9 +88,10 @@ Not built yet.
 
 ## Known limitations and next steps
 
-- INTAKE, INVENTORY and INTEL are real; the other states are still stubs. Findings are candidates (`potential`) until impact analysis exists.
+- INTAKE through PRIORITIZE are real; repair, testing and reporting are still stubs. A breaking finding stays `potential` until a test fails on the new version, which the BASELINE state will do.
+- Impact accuracy is perfect on this benchmark, so it shows no room to improve yet. The repair stages are where failures are expected.
 - Only direct dependencies are checked for breaking changes; advisories cover the whole installed tree.
-- Next: Milestone 4 (impact analysis with entire-graph, and prioritisation).
+- Next: Milestone 5 (sandbox, patching and test runs).
 
 ## Submission
 

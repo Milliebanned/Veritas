@@ -222,7 +222,7 @@ Every stored source records its URL and whether the claim was read from the sour
 
 **Step B, usage map:** an `ImpactProvider` interface with two implementations:
 - **`GraphProvider`** shells out to `entire graph`. [Verified in M0] `edges` (NDJSON) lists package usage directly as `IMPORTS` to `external:import:<pkg>` and `CALLS` to `external:symbol:<pkg>.<member>` with file and line; `neighbors --symbol` (JSON) gives callers. `impact --symbol` prints text only, so its output is stored as evidence and not parsed.
-- **`FallbackProvider`** uses the TypeScript compiler API to resolve imports and references.
+- **`FallbackProvider`** scans the source text for `require`, `import`, dynamic `import()` and re-exports of the package. It is used when the graph is unavailable or reports nothing for a package, so a missing graph never reads as "not used". (The plan first named the TypeScript compiler API; a text scan covers the same need for import sites and has no dependency.)
 
 [Verified in M0] JavaScript and TypeScript are supported with import and call relations, and the graph needs no login and no network, so `GraphProvider` is primary and the fallback covers what the graph misses. [To verify in M10: install on the EC2 instance; a `linux_amd64` release asset exists.]
 
