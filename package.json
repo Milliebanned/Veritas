@@ -18,7 +18,8 @@
   "dependencies": {
     "neatlogs": "^1.1.28",
     "openai": "^7.32.0",
-    "semver": "^7.8.5"
+    "semver": "^7.8.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

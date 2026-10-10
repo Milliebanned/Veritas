@@ -25,13 +25,19 @@ export async function shutdownTracing(): Promise<void> {
   enabled = false;
 }
 
+/** Lets the body of a span add attributes it only knows once it has run, such as an outcome or a cost. */
+export type SetAttrs = (attrs: Attrs) => void;
+
 /** Runs fn inside a named span. Attributes are prefixed `veritas.` so they are easy to filter on. */
-export async function traced<T>(name: string, kind: Kind, attrs: Attrs, fn: () => Promise<T> | T): Promise<T> {
-  if (!enabled) return fn();
+export async function traced<T>(name: string, kind: Kind, attrs: Attrs, fn: (set: SetAttrs) => Promise<T> | T): Promise<T> {
+  if (!enabled) return fn(() => undefined);
   return trace({ name, kind }, async (span) => {
-    for (const [k, v] of Object.entries(attrs)) {
-      if (v !== undefined) span.setAttribute(`veritas.${k}`, v);
-    }
-    return fn();
+    const set: SetAttrs = (more) => {
+      for (const [k, v] of Object.entries(more)) {
+        if (v !== undefined) span.setAttribute(`veritas.${k}`, v);
+      }
+    };
+    set(attrs);
+    return fn(set);
   });
 }

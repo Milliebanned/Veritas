@@ -104,3 +104,16 @@ CREATE TABLE IF NOT EXISTS approvals (
   decided_at TEXT NOT NULL,
   pr_url TEXT
 );
+
+CREATE TABLE IF NOT EXISTS llm_calls (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  investigation_id TEXT NOT NULL REFERENCES investigations(id),
+  state TEXT NOT NULL,
+  step TEXT NOT NULL,
+  model TEXT NOT NULL,
+  prompt_tokens INTEGER NOT NULL DEFAULT 0,
+  completion_tokens INTEGER NOT NULL DEFAULT 0,
+  cost_usd REAL,
+  duration_ms INTEGER,
+  created_at TEXT NOT NULL
+);
