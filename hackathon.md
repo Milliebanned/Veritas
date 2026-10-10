@@ -58,6 +58,10 @@ Found in Milestone 0 verification:
 - neatlogs trace links ask for a login when opened outside the account, so trace evidence is kept as screenshots in `evidence/neatlogs/`. The first two are saved: the smoke test trace and the Milestone 1 stub investigation trace.
 
 Still to check by hand: whether Entire checkpoints open in a logged-out browser, and whether cfo.ai accepts typed assumptions.
+- Milestone 2: eight benchmark cases in `bench/cases/`, each with ground truth (`case.yaml`), a held-out acceptance test and, for breaking cases, a reference fix. Five breaking changes (chalk, node-fetch, marked, uuid, express), one advisory case (lodash), two controls.
+- Tests that ran: `node bench/reproduce.mjs` — 8 of 8 cases valid on Node v24.20.0. For the five breaking cases the project's tests pass on the old version, fail after the bump with a real error, and pass again with the reference fix. Results in `evidence/bench/reproduction.json` and `bench/README.md`. `npx vitest run` 6 passed; `npx tsc --noEmit` clean.
+- Each breaking change was read from the package's own release notes; the URL and quote are in the case file.
+- The first control case used uuid 3.4.0, which turned out to have a published advisory, so it was rebuilt on express 4.22.3 (no advisory) to keep it a clean control.
 
 Changed from the plan:
 - State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.
@@ -69,7 +73,7 @@ Not built yet.
 ## Known limitations and next steps
 
 - Every agent state is still a stub; no dependency analysis happens yet.
-- Next: Milestone 2 (benchmark case repos with ground truth), then Milestone 3 (inventory and intelligence tools).
+- Next: Milestone 3 (inventory and intelligence tools).
 
 ## Submission
 

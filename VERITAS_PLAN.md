@@ -350,18 +350,18 @@ Each failed attempt is reverted with `git reset --hard` to the pre-attempt commi
 
 **Benchmark set:** `bench/cases/`, 8 small repos created during the hackathon. Each has a `case.yaml` with ground truth: expected verdict, expected affected files, and a held-out acceptance test the agent never sees.
 
-Candidate cases [To verify each from the package's release notes and by reproducing in M2]:
+Cases [Verified in M2: each change read from the package's release notes and reproduced with `node bench/reproduce.mjs`; details in `bench/README.md`]:
 
 | # | Case | Type |
 |---|---|---|
-| 1 | chalk 4 → 5 (ESM-only) in a CommonJS repo | Breaking |
+| 1 | chalk 4 → 6 (ESM-only since 5) in a CommonJS repo | Breaking |
 | 2 | node-fetch 2 → 3 (ESM-only) | Breaking |
 | 3 | marked: default import to named export | Breaking |
 | 4 | uuid: removed deep imports | Breaking |
-| 5 | express 4 → 5: removed methods | Breaking |
-| 6 | A package with a published advisory fixed in a patch release | Advisory |
-| 7 | Breaking change in an API the repo does not call | Control: expect `not_affected` |
-| 8 | Outdated package with no breaking change and no advisory | Control: expect no finding |
+| 5 | express 4 → 5: removed methods (`app.del`, `req.param`, `res.json(status, body)`) | Breaking |
+| 6 | lodash 4.17.15: published advisories fixed in later 4.x releases | Advisory |
+| 7 | express 4 → 5 in a repo that calls none of the removed APIs | Control: expect `not_affected` |
+| 8 | semver 7.5.4, behind the latest 7.x, no breaking change and no advisory | Control: expect no finding |
 
 Cases 7 and 8 measure false positives. If a candidate does not reproduce, it is replaced, and the case list in the repo records what was actually used.
 
