@@ -1,0 +1,65 @@
+[
+ {
+  "tag_name": "v6.0.1",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-09-27T03:37:47Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v6.0.1",
+  "body": "- Fix inconsistent coercion of two arguments  9c93a04\r\n\r\n---\r\n\r\nhttps://github.com/chalk/chalk/compare/v6.0.0...v6.0.1"
+ },
+ {
+  "tag_name": "v6.0.0",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-07-26T14:51:47Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v6.0.0",
+  "body": "### Breaking\r\n\r\n- Require Node.js 22  8a94e0e\r\n\r\n### Improvements\r\n\r\n- Add underline styles and underline colors (#689)  4c304dd\r\n- Improve performance  5729845 fa5cff2\r\n\r\n### Fixes\r\n\r\n- Treat a numeric `FORCE_COLOR` as an exact level (#688)  e912931\r\n- Downsample `ansi256()` and `bgAnsi256()` to 16 colors at level 1 (#687)  ff549c5\r\n\r\n---\r\n\r\nhttps://github.com/chalk/chalk/compare/v5.6.2...v6.0.0"
+ },
+ {
+  "tag_name": "v5.1.0",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2022-10-05T14:46:46Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v5.1.0",
+  "body": "- Expose style names (#566)  d7d7571\r\n\r\nhttps://github.com/chalk/chalk/compare/v5.0.1...v5.1.0"
+ },
+ {
+  "tag_name": "v5.0.1",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2022-03-08T18:44:58Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v5.0.1",
+  "body": "- Add `main` field to package.json for backwards compatibility with some developer tools  85f7e96\r\n\r\nhttps://github.com/chalk/chalk/compare/v5.0.0...v5.0.1"
+ },
+ {
+  "tag_name": "v5.0.0",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2021-11-26T10:13:19Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v5.0.0",
+  "body": "### Breaking\r\n\r\n- **This package is now pure ESM. Please [read this](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c).**\r\n\t- If you use TypeScript, you need to use TypeScript 4.7 or later. [Why.](https://github.com/microsoft/TypeScript/issues/46452)\r\n\t- If you use a bundler, make sure it supports ESM and that you have correctly configured it for ESM.\r\n\t- The Chalk issue tracker is not a support channel for your favorite build/bundler tool.\r\n\t- It's totally fine to stay on Chalk v4. It's been stable for years.\r\n- Require Node.js 12.20  fa16f4e\r\n- Move some properties off the default export to individual named exports:\r\n\t- `chalk.Instance` → `Chalk`\r\n\t- `chalk.supportsColor` → `supportsColor`\r\n\t- `chalk.stderr` → `chalkStderr`\r\n\t- `chalk.stderr.supportsColor` → `supportsColorStderr`\r\n- Remove `.keyword()`, `.hsl()`, `.hsv()`, `.hwb()`, and `.ansi()` coloring methods (#433)  4cf2e40\r\n\t- These were not commonly used and added a lot of bloat to Chalk. You can achieve the same by using the [`color-convert` package](https://github.com/Qix-/color-convert).\r\n\t- [How to migrate from `.keyword()`](https://github.com/chalk/chalk/issues/659)\r\n- The tagged template literal support moved into a separate package: [`chalk-template`](https://github.com/chalk/chalk-template) (#524)  c987c61\r\n```diff\r\n-import chalk from 'chalk';\r\n+import chalkTemplate from 'chalk-template';\r\n\r\n-chalk`2 + 3 = {bold ${2 + 3}}`;\r\n+chalkTemplate`2 + 3 = {bold ${2 + 3}}`;\r\n```\r\n\r\n### Improvements\r\n\r\n- Bundle dependencies  04fdbd6\r\n\t- This means Chalk no longer has any dependencies 🎉\r\n- [The install size is less than half of v4.](https://packagephobia.com/result?p=chalk)\r\n- Add `overline` style  (#433)  4cf2e40\r\n- Preserve function prototype methods (#434)  0fba91b\r\n\r\nhttps://github.com/chalk/chalk/compare/v4.1.0...v5.0.0"
+ },
+ {
+  "tag_name": "v4.1.2",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2021-07-30T12:04:55Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v4.1.2",
+  "body": "- Readme updates"
+ },
+ {
+  "tag_name": "v4.1.1",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2021-04-21T10:10:10Z",
+  "html_url": "https://github.com/chalk/chalk/releases/tag/v4.1.1",
+  "body": "- Readme updates https://github.com/chalk/chalk/commit/89e9e3a5b0601f4eda4c3a92acd887ec836d0175"
+ }
+]

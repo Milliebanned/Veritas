@@ -1,0 +1,365 @@
+[
+ {
+  "ghsa_id": "GHSA-r5fr-rjxr-66jc",
+  "cve_id": "CVE-2026-4800",
+  "html_url": "https://github.com/advisories/GHSA-r5fr-rjxr-66jc",
+  "summary": "lodash vulnerable to Code Injection via `_.template` imports key names",
+  "type": "reviewed",
+  "severity": "high",
+  "published_at": "2026-04-01T23:51:12Z",
+  "withdrawn_at": null,
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.17.23",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-es"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.17.23",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-amd"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.17.23",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.template"
+    },
+    "vulnerable_version_range": ">= 4.0.0, < 4.18.0",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   }
+  ]
+ },
+ {
+  "ghsa_id": "GHSA-f23m-r3pf-42rh",
+  "cve_id": "CVE-2026-2950",
+  "html_url": "https://github.com/advisories/GHSA-f23m-r3pf-42rh",
+  "summary": "lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`",
+  "type": "reviewed",
+  "severity": "medium",
+  "published_at": "2026-04-01T23:50:27Z",
+  "withdrawn_at": null,
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": "<= 4.17.23",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-es"
+    },
+    "vulnerable_version_range": "<= 4.17.23",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-amd"
+    },
+    "vulnerable_version_range": "<= 4.17.23",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.unset"
+    },
+    "vulnerable_version_range": ">= 4.0.0, < 4.18.0",
+    "first_patched_version": "4.18.0",
+    "vulnerable_functions": []
+   }
+  ]
+ },
+ {
+  "ghsa_id": "GHSA-xxjr-mmjv-4gpg",
+  "cve_id": "CVE-2025-13465",
+  "html_url": "https://github.com/advisories/GHSA-xxjr-mmjv-4gpg",
+  "summary": "Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions",
+  "type": "reviewed",
+  "severity": "medium",
+  "published_at": "2026-01-21T23:01:22Z",
+  "withdrawn_at": null,
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.17.22",
+    "first_patched_version": "4.17.23",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.unset"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.5.2",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-es"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.17.22",
+    "first_patched_version": "4.17.23",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-amd"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.17.22",
+    "first_patched_version": "4.17.23",
+    "vulnerable_functions": []
+   }
+  ]
+ },
+ {
+  "ghsa_id": "GHSA-29mw-wpgm-hmr9",
+  "cve_id": "CVE-2020-28500",
+  "html_url": "https://github.com/advisories/GHSA-29mw-wpgm-hmr9",
+  "summary": "Regular Expression Denial of Service (ReDoS) in lodash",
+  "type": "reviewed",
+  "severity": "medium",
+  "published_at": "2022-01-06T20:30:46Z",
+  "withdrawn_at": null,
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": ">= 4.0.0, < 4.17.21",
+    "first_patched_version": "4.17.21",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-es"
+    },
+    "vulnerable_version_range": ">= 4.0.0, < 4.17.21",
+    "first_patched_version": "4.17.21",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.trimend"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.5.1",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.trim"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.5.1",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "rubygems",
+     "name": "lodash-rails"
+    },
+    "vulnerable_version_range": ">= 4.0.0, < 4.17.21",
+    "first_patched_version": "4.17.21",
+    "vulnerable_functions": []
+   }
+  ]
+ },
+ {
+  "ghsa_id": "GHSA-8p5q-j9m2-g8wr",
+  "cve_id": "CVE-2021-41720",
+  "html_url": "https://github.com/advisories/GHSA-8p5q-j9m2-g8wr",
+  "summary": "Withdrawn: Arbitrary code execution in lodash",
+  "type": "unreviewed",
+  "severity": "low",
+  "published_at": "2021-12-03T20:37:32Z",
+  "withdrawn_at": "2021-10-01T22:04:28Z",
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": "<= 4.17.21",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   }
+  ]
+ },
+ {
+  "ghsa_id": "GHSA-35jh-r3h4-6jhm",
+  "cve_id": "CVE-2021-23337",
+  "html_url": "https://github.com/advisories/GHSA-35jh-r3h4-6jhm",
+  "summary": "Command Injection in lodash",
+  "type": "reviewed",
+  "severity": "high",
+  "published_at": "2021-05-06T16:05:51Z",
+  "withdrawn_at": null,
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": "< 4.17.21",
+    "first_patched_version": "4.17.21",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-es"
+    },
+    "vulnerable_version_range": "< 4.17.21",
+    "first_patched_version": "4.17.21",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.template"
+    },
+    "vulnerable_version_range": "<= 4.5.0",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-template"
+    },
+    "vulnerable_version_range": "<= 1.0.0",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "rubygems",
+     "name": "lodash-rails"
+    },
+    "vulnerable_version_range": "< 4.17.21",
+    "first_patched_version": "4.17.21",
+    "vulnerable_functions": []
+   }
+  ]
+ },
+ {
+  "ghsa_id": "GHSA-p6mc-m468-83gw",
+  "cve_id": "CVE-2020-8203",
+  "html_url": "https://github.com/advisories/GHSA-p6mc-m468-83gw",
+  "summary": "Prototype Pollution in lodash",
+  "type": "reviewed",
+  "severity": "high",
+  "published_at": "2020-07-15T19:15:48Z",
+  "withdrawn_at": null,
+  "vulnerabilities": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash"
+    },
+    "vulnerable_version_range": ">= 3.7.0, < 4.17.19",
+    "first_patched_version": "4.17.19",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash-es"
+    },
+    "vulnerable_version_range": ">= 3.7.0, < 4.17.20",
+    "first_patched_version": "4.17.20",
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.pick"
+    },
+    "vulnerable_version_range": ">= 4.0.0, <= 4.4.0",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.set"
+    },
+    "vulnerable_version_range": ">= 3.7.0, <= 4.3.2",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.setwith"
+    },
+    "vulnerable_version_range": "<= 4.3.2",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.update"
+    },
+    "vulnerable_version_range": "<= 4.10.2",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "lodash.updatewith"
+    },
+    "vulnerable_version_range": "<= 4.10.2",
+    "first_patched_version": null,
+    "vulnerable_functions": []
+   },
+   {
+    "package": {
+     "ecosystem": "rubygems",
+     "name": "lodash-rails"
+    },
+    "vulnerable_version_range": ">= 3.7.0, < 4.17.19",
+    "first_patched_version": "4.17.19",
+    "vulnerable_functions": []
+   }
+  ]
+ }
+]
