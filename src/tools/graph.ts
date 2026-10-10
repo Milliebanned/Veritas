@@ -74,11 +74,12 @@ export function parseEdges(ndjson: string, pkg: string): UsageSite[] {
   return sites;
 }
 
-function entireGraph(repoDir: string, args: string[], timeoutMs: number): Promise<string> {
+function entireGraph(repoDir: string, args: string[], timeoutMs: number, stdin?: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFile('entire', ['graph', ...args], { cwd: repoDir, timeout: timeoutMs, maxBuffer: 256 * 1024 * 1024 }, (err, stdout) =>
+    const child = execFile('entire', ['graph', ...args], { cwd: repoDir, timeout: timeoutMs, maxBuffer: 256 * 1024 * 1024 }, (err, stdout) =>
       err ? reject(new Error(`entire graph ${args[0]} failed: ${err.message.split('\n')[0]}`)) : resolve(stdout),
     );
+    if (stdin !== undefined) child.stdin?.end(stdin);
   });
 }
 
@@ -110,4 +111,56 @@ export async function graphSearch(repoDir: string, query: string, timeoutMs = 60
     .filter((r) => r.file_path && r.language !== 'JSON')
     .slice(0, 12)
     .map((r) => ({ file: r.file_path!, line: r.start_line ?? 1, symbol: r.symbol_name ?? null, snippet: (r.snippet ?? '').trim().slice(0, 300) }));
+}
+
+export interface Verdict {
+  /** The verdict line, for example `VERDICT: FAIL (exit 1)`. */
+  verdict: string;
+  passed: boolean;
+  /** `exit-code-only` when the runner's output format is not one the graph can read test names from. */
+  detail: string;
+}
+
+/**
+ * Records the test result of the unmodified tree, so a later run can be judged against it.
+ * `entire graph verify` runs the command itself; it is given a scrubbed environment.
+ */
+export async function graphRecordBaseline(repoDir: string, testCommand: string, baselinePath: string, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<string> {
+  return runVerify(repoDir, ['--test', testCommand, '--record-baseline', baselinePath], env, timeoutMs);
+}
+
+/** Runs the tests again and has the graph adjudicate them against the recorded baseline: which tests newly fail, newly pass, or were already failing. */
+export async function graphVerify(repoDir: string, testCommand: string, baselinePath: string, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Verdict> {
+  const out = await runVerify(repoDir, ['--test', testCommand, '--pre-edit-baseline', baselinePath], env, timeoutMs);
+  const verdict = out.split('\n').find((line) => line.startsWith('VERDICT:')) ?? out.split('\n')[0] ?? '';
+  return { verdict, passed: /^VERDICT:\s*PASS/.test(verdict), detail: out.trim().slice(0, 2000) };
+}
+
+function runVerify(repoDir: string, args: string[], env: NodeJS.ProcessEnv, timeoutMs: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile('entire', ['graph', 'verify', '--repo', '.', ...args], { cwd: repoDir, env, timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024 }, (err, stdout, stderr) =>
+      err && !stdout ? reject(new Error(`entire graph verify failed: ${(stderr || err.message).split('\n')[0]}`)) : resolve(stdout),
+    );
+  });
+}
+
+/** Declarations of the symbols a failing build or test names, resolved from the working tree. */
+export const graphExplain = (repoDir: string, failureOutput: string, timeoutMs = 60_000) =>
+  entireGraph(repoDir, ['explain', '--repo', '.', '--no-echo', '--format', 'agent'], timeoutMs, failureOutput);
+
+export interface EntityChange {
+  file: string;
+  type: string;
+  kind: string;
+  name: string;
+  dependents: number;
+}
+
+/** Which functions and other entities changed between two commits, with how many places depend on each. */
+export async function graphDiff(repoDir: string, base: string, headRef = 'HEAD', timeoutMs = 120_000): Promise<EntityChange[]> {
+  const out = await entireGraph(repoDir, ['diff', '--base', base, '--head', headRef, '--json'], timeoutMs);
+  const parsed = JSON.parse(out) as { files?: { path?: string; language?: string; changes?: { type?: string; kind?: string; name?: string; dependents_count?: number }[] }[] };
+  return (parsed.files ?? [])
+    .filter((f) => f.path && f.language !== 'JSON')
+    .flatMap((f) => (f.changes ?? []).map((c) => ({ file: f.path!, type: c.type ?? '', kind: c.kind ?? '', name: c.name ?? '', dependents: c.dependents_count ?? 0 })));
 }
