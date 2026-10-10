@@ -119,7 +119,7 @@ export async function runToolLoop<T>(opts: LoopOptions<T>): Promise<LoopResult<T
         continue;
       }
       try {
-        const output = await traced(`tool.${tool.name}`, 'TOOL', { tool: tool.name, args: JSON.stringify(args).slice(0, 500) }, () => tool.run(args));
+        const output = await traced(`tool.${tool.name}`, 'TOOL', { tool: tool.name }, () => tool.run(args), args);
         toolCalls.push({ name: tool.name, args, ok: true });
         reply(output.length > MAX_TOOL_OUTPUT ? `${output.slice(0, MAX_TOOL_OUTPUT)}\n[truncated]` : output);
       } catch (err) {

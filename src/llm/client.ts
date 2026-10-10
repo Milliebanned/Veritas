@@ -2,6 +2,7 @@ import { wrapOpenAI } from 'neatlogs';
 import OpenAI from 'openai';
 import type { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionTool, ChatCompletionToolChoiceOption } from 'openai/resources/chat/completions';
 import type { Limits } from '../agent/limits.ts';
+import { traced } from '../observability/neatlogs.ts';
 import type { Db } from '../state/db.ts';
 
 export interface LlmCallContext {
@@ -88,19 +89,24 @@ export function createChat(db: Db, limits: Limits): Chat {
       throw new TokenBudgetExceeded(used.promptTokens + used.completionTokens, limits.maxTokens);
     }
     const model = activeModel();
-    const t0 = Date.now();
-    const res = await client.chat.completions.create({
-      model,
-      temperature: 0,
-      max_tokens: request.maxTokens ?? 2000,
-      messages: request.messages,
-      ...(request.tools ? { tools: request.tools, tool_choice: request.toolChoice ?? 'auto' } : {}),
-    });
-    const message = res.choices[0]?.message;
-    if (!message) throw new Error('Model returned no message');
-    const promptTokens = res.usage?.prompt_tokens ?? 0;
-    const completionTokens = res.usage?.completion_tokens ?? 0;
-    record.run(ctx.investigationId, ctx.state, ctx.step, model, promptTokens, completionTokens, lastCost, Date.now() - t0, new Date().toISOString());
-    return { message, promptTokens, completionTokens, costUsd: lastCost };
+    // The wrapped client traces the call itself; this span adds the cost, which neatlogs does not price for LiteLLM model names.
+    return traced('llm.chat', 'CHAIN', { model, state: ctx.state, step: ctx.step }, async (set) => {
+      const t0 = Date.now();
+      const res = await client.chat.completions.create({
+        model,
+        temperature: 0,
+        max_tokens: request.maxTokens ?? 2000,
+        messages: request.messages,
+        ...(request.tools ? { tools: request.tools, tool_choice: request.toolChoice ?? 'auto' } : {}),
+      });
+      const message = res.choices[0]?.message;
+      if (!message) throw new Error('Model returned no message');
+      const promptTokens = res.usage?.prompt_tokens ?? 0;
+      const completionTokens = res.usage?.completion_tokens ?? 0;
+      const costUsd = lastCost;
+      record.run(ctx.investigationId, ctx.state, ctx.step, model, promptTokens, completionTokens, costUsd, Date.now() - t0, new Date().toISOString());
+      set({ prompt_tokens: promptTokens, completion_tokens: completionTokens, cost_usd: costUsd ?? undefined, latency_ms: Date.now() - t0 });
+      return { message, promptTokens, completionTokens, costUsd };
+    }, { messages: request.messages.length, tool_choice: request.toolChoice ?? 'auto' });
   };
 }

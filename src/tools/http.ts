@@ -1,3 +1,5 @@
+import { traced } from '../observability/neatlogs.ts';
+
 export interface HttpResponse {
   status: number;
   text: string;
@@ -36,12 +38,17 @@ export const httpGet: HttpGet = async (url, opts = {}) => {
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt > 0) await sleep(backoffMs * 2 ** (attempt - 1));
     try {
-      const res = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
-      if (transient(res.status)) {
-        lastError = new HttpError(url, res.status);
-        continue;
-      }
-      return { status: res.status, text: await res.text() };
+      // One span per attempt, so a retry and the failure that caused it are both visible in the trace.
+      // The body stays out of the span: a registry document can be several megabytes.
+      let text = '';
+      const summary = await traced('http.get', 'TOOL', { url, attempt: attempt + 1 }, async (set) => {
+        const r = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
+        set({ status: r.status, retry: attempt > 0 });
+        if (transient(r.status)) throw new HttpError(url, r.status);
+        text = await r.text();
+        return { status: r.status, bytes: text.length };
+      });
+      return { status: summary.status, text };
     } catch (err) {
       lastError = err;
     }

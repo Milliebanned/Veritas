@@ -77,13 +77,17 @@ export class Orchestrator {
       limits: this.limits,
       step: async (name, input, fn) => {
         const result = await this.journal.runStep(inv.id, state, name, input, () =>
-          traced(`step.${name}`, 'CHAIN', { state, step: name }, fn),
+          traced(`step.${name}`, 'CHAIN', { state, step: name }, fn, input),
         );
         // A reused step still shows in the trace, marked, so skipped work is visible.
         if (result.reused) await traced(`step.${name}`, 'CHAIN', { state, step: name, reused: true }, () => undefined);
         return result.output;
       },
     };
-    return traced(`state.${state}`, 'CHAIN', { state }, () => this.opts.handlers[state](ctx));
+    return traced(`state.${state}`, 'CHAIN', { state }, async (set) => {
+      const next = await this.opts.handlers[state](ctx);
+      set({ next_state: next });
+      return next;
+    });
   }
 }
