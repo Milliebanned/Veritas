@@ -39,10 +39,14 @@ Findings to act on:
 - No Docker and no Homebrew on the dev machine; Node is v24. Use `VERITAS_SANDBOX=local` for development and confirm each benchmark case reproduces on the Node version in use.
 - The first two commits have no Entire checkpoint because the hooks were installed mid-session. Checkpoints start with the next coding session.
 
-Pending:
-- `entire login`.
-- First Entire checkpoint.
-- Public GitHub repository.
+- `entire login` done. Public repository created: https://github.com/Milliebanned/Veritas
+- Entire checkpoints are being recorded from commit `688b89f` onward (the hooks loaded during the session, so a restart was not needed).
+- Milestone 1: SQLite state store (`node:sqlite`, no native dependency), step journal with idempotency keys, orchestrator state machine with enforced transitions, neatlogs tracing wrapper with named spans, CLI (`investigate`, `resume`, `status`). All state handlers are stubs.
+- Tests that ran: `npx vitest run` — 6 passed, 0 failed (journal reuse, failure retry, stub pipeline, crash and resume, illegal transition). `npx tsc --noEmit` clean.
+- A stub investigation ran end to end through the CLI with tracing on.
+
+Changed from the plan:
+- State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.
 
 ## Demo
 
@@ -50,8 +54,8 @@ Not built yet.
 
 ## Known limitations and next steps
 
-- No application code yet.
-- Next: Milestone 0 smoke tests, then the state store and agent skeleton (Milestone 1).
+- Every agent state is still a stub; no dependency analysis happens yet.
+- Next: Milestone 2 (benchmark case repos with ground truth), then Milestone 3 (inventory and intelligence tools).
 
 ## Submission
 
