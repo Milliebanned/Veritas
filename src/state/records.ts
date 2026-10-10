@@ -9,7 +9,8 @@ export interface DependencyRecord {
   deprecated: string | null;
 }
 
-export type FindingKind = 'breaking' | 'advisory' | 'deprecation';
+/** `unchecked` records a package Veritas could not examine, so a failed lookup is never reported as "nothing found". */
+export type FindingKind = 'breaking' | 'advisory' | 'deprecation' | 'unchecked';
 export type FindingStatus = 'confirmed' | 'potential' | 'unresolved' | 'not_affected';
 
 export interface FindingInput {
@@ -52,6 +53,46 @@ export interface AffectedSiteRecord {
   line: number | null;
   symbol: string | null;
   provider: string;
+}
+
+export type RepairStatus = 'planned' | 'reproduced' | 'patched' | 'verified' | 'unresolved' | 'not_reproduced';
+
+export interface RepairRecord {
+  id: number;
+  investigation_id: string;
+  package: string;
+  from_version: string;
+  target_version: string;
+  /** JSON array of the finding ids this repair addresses. */
+  finding_ids: string;
+  branch: string;
+  base_commit: string | null;
+  bump_commit: string | null;
+  status: RepairStatus;
+  attempts: number;
+  note: string | null;
+}
+
+export interface AttemptRecord {
+  id: number;
+  finding_id: string;
+  n: number;
+  plan_text: string | null;
+  diff: string | null;
+  outcome: string | null;
+  diagnosis_text: string | null;
+}
+
+export interface TestRunRecord {
+  id: number;
+  attempt_id: number | null;
+  label: string;
+  command: string;
+  exit_code: number | null;
+  passed: number | null;
+  failed: number | null;
+  log_path: string | null;
+  duration_ms: number | null;
 }
 
 /** One finding per package and kind in an investigation, so writing it again replaces it. */
@@ -122,6 +163,78 @@ export class Records {
          JOIN findings f ON f.id = s.finding_id WHERE f.investigation_id = ? ORDER BY s.id`,
       )
       .all(investigationId) as unknown as AffectedSiteRecord[];
+  }
+
+  /** Plans one repair per package. Planning again leaves existing repairs as they are. */
+  planRepair(investigationId: string, repair: { package: string; from: string; target: string; findingIds: string[]; branch: string }): void {
+    this.db
+      .prepare(
+        `INSERT INTO repairs (investigation_id, package, from_version, target_version, finding_ids, branch) VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT (investigation_id, package) DO NOTHING`,
+      )
+      .run(investigationId, repair.package, repair.from, repair.target, JSON.stringify(repair.findingIds), repair.branch);
+  }
+
+  repairs(investigationId: string): RepairRecord[] {
+    return this.db.prepare('SELECT * FROM repairs WHERE investigation_id = ? ORDER BY id').all(investigationId) as unknown as RepairRecord[];
+  }
+
+  /** The repair being worked on: the first one that has not reached an end state. */
+  currentRepair(investigationId: string): RepairRecord | undefined {
+    return this.repairs(investigationId).find((r) => r.status === 'planned' || r.status === 'reproduced' || r.status === 'patched');
+  }
+
+  updateRepair(id: number, fields: Partial<Pick<RepairRecord, 'status' | 'attempts' | 'note' | 'base_commit' | 'bump_commit'>>): void {
+    const entries = Object.entries(fields).filter(([, v]) => v !== undefined);
+    if (entries.length === 0) return;
+    this.db.prepare(`UPDATE repairs SET ${entries.map(([k]) => `${k} = ?`).join(', ')} WHERE id = ?`).run(...entries.map(([, v]) => v as string | number | null), id);
+  }
+
+  setFindingStatus(findingId: string, status: FindingStatus, fields: { severity?: number; confidence?: number; note?: string } = {}): void {
+    this.db
+      .prepare(
+        `UPDATE findings SET status = ?, severity = COALESCE(?, severity), confidence = COALESCE(?, confidence),
+           rationale = CASE WHEN ? IS NULL THEN rationale ELSE rationale || ' ' || ? END WHERE id = ?`,
+      )
+      .run(status, fields.severity ?? null, fields.confidence ?? null, fields.note ?? null, fields.note ?? null, findingId);
+  }
+
+  /** Records an attempt, replacing an earlier record of the same attempt number so a re-run step does not duplicate it. */
+  saveAttempt(findingId: string, n: number, fields: { plan?: string; diff?: string; outcome?: string; diagnosis?: string }): number {
+    const existing = this.db.prepare('SELECT id FROM attempts WHERE finding_id = ? AND n = ?').get(findingId, n) as { id: number } | undefined;
+    if (existing) {
+      this.db
+        .prepare(
+          `UPDATE attempts SET plan_text = COALESCE(?, plan_text), diff = COALESCE(?, diff), outcome = COALESCE(?, outcome),
+             diagnosis_text = COALESCE(?, diagnosis_text) WHERE id = ?`,
+        )
+        .run(fields.plan ?? null, fields.diff ?? null, fields.outcome ?? null, fields.diagnosis ?? null, existing.id);
+      return existing.id;
+    }
+    const result = this.db
+      .prepare('INSERT INTO attempts (finding_id, n, plan_text, diff, outcome, diagnosis_text) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(findingId, n, fields.plan ?? null, fields.diff ?? null, fields.outcome ?? null, fields.diagnosis ?? null);
+    return Number(result.lastInsertRowid);
+  }
+
+  attempts(investigationId: string): AttemptRecord[] {
+    return this.db
+      .prepare('SELECT a.* FROM attempts a JOIN findings f ON f.id = a.finding_id WHERE f.investigation_id = ? ORDER BY a.finding_id, a.n')
+      .all(investigationId) as unknown as AttemptRecord[];
+  }
+
+  saveTestRun(
+    investigationId: string,
+    run: { label: string; command: string; exitCode: number | null; passed: number | null; failed: number | null; logPath: string; durationMs: number; attemptId?: number },
+  ): void {
+    this.db.prepare('DELETE FROM test_runs WHERE investigation_id = ? AND label = ?').run(investigationId, run.label);
+    this.db
+      .prepare('INSERT INTO test_runs (investigation_id, attempt_id, label, command, exit_code, passed, failed, log_path, duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(investigationId, run.attemptId ?? null, run.label, run.command, run.exitCode, run.passed, run.failed, run.logPath, run.durationMs);
+  }
+
+  testRuns(investigationId: string): TestRunRecord[] {
+    return this.db.prepare('SELECT * FROM test_runs WHERE investigation_id = ? ORDER BY id').all(investigationId) as unknown as TestRunRecord[];
   }
 
   dependencies(investigationId: string): DependencyRecord[] {

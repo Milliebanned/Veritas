@@ -212,7 +212,9 @@ describe('impact state', () => {
 
   async function run(chat: Chat, p: ImpactProvider = provider) {
     const db = openDb(':memory:');
-    const handlers = { ...stubHandlers, ...createHandlers(tools, { chat, provider: p }) };
+    // Repair has its own tests; here the pipeline stops being real after prioritisation.
+    const { INTAKE, INVENTORY, INTEL, IMPACT, PRIORITIZE } = createHandlers(tools, { chat, provider: p });
+    const handlers = { ...stubHandlers, INTAKE, INVENTORY, INTEL, IMPACT, PRIORITIZE };
     const orchestrator = new Orchestrator({ db, handlers, limits: loadLimits() });
     const inv = await orchestrator.run(orchestrator.start('bench/cases/03-marked-default-export/repo').id);
     return { inv, records: new Records(db), journal: new Journal(db) };

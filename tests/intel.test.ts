@@ -44,7 +44,10 @@ function recordedTools(calls: string[], overrides: Partial<IntelTools> = {}): In
 }
 
 /** The states under test are real; impact analysis and prioritisation have their own tests. */
-const upToIntel = (tools: IntelTools) => ({ ...createHandlers(tools), IMPACT: stubHandlers.IMPACT, PRIORITIZE: stubHandlers.PRIORITIZE });
+const upToIntel = (tools: IntelTools) => {
+  const { INTAKE, INVENTORY, INTEL } = createHandlers(tools);
+  return { ...stubHandlers, INTAKE, INVENTORY, INTEL };
+};
 
 async function investigate(caseId: string, tools: IntelTools) {
   const db = openDb(':memory:');
@@ -99,6 +102,36 @@ describe('intake, inventory and intel', () => {
     expect(inv.status).toBe('awaiting_approval');
     expect(records.sources(inv.id).map((s) => s.kind)).toEqual(['registry']);
     expect(journal.output<IntelSummary>(inv.id, 'INTEL', 'candidates')?.unavailable).toEqual(['release_notes for chalk: Error: GET https://api.github.com/... returned 503']);
+  });
+
+  it('waits and tries the registry again after it fails, then carries on normally', async () => {
+    process.env.VERITAS_LOOKUP_WAIT_MS = '5';
+    let calls = 0;
+    const tools = recordedTools([], {
+      fetchPackageInfo: async (name, installed) => {
+        if (++calls < 3) throw new TypeError('fetch failed');
+        return parsePackument(fixture(`packument-${name}.json`), installed);
+      },
+    });
+    const { inv, records, journal } = await investigate('01-chalk-esm-only', tools);
+    expect(calls).toBe(3);
+    expect(records.findings(inv.id)).toMatchObject([{ package: 'chalk', kind: 'breaking' }]);
+    expect(journal.output<IntelSummary>(inv.id, 'INTEL', 'candidates')?.unavailable).toEqual([]);
+  });
+
+  it('reports a package as unchecked, not as clean, when the registry never answers', async () => {
+    process.env.VERITAS_LOOKUP_WAIT_MS = '5';
+    let calls = 0;
+    const tools = recordedTools([], { fetchPackageInfo: async () => { calls++; throw new TypeError('fetch failed'); } });
+    const { inv, records, journal } = await investigate('01-chalk-esm-only', tools);
+
+    expect(calls).toBe(3);
+    expect(inv.status).toBe('awaiting_approval');
+    const [finding, ...others] = records.findings(inv.id);
+    expect(others).toEqual([]);
+    expect(finding).toMatchObject({ package: 'chalk', kind: 'unchecked', status: 'unresolved' });
+    expect(finding?.rationale).toContain('could not be checked');
+    expect(journal.output<IntelSummary>(inv.id, 'INTEL', 'candidates')?.unavailable).toEqual(['registry for chalk: TypeError: fetch failed']);
   });
 
   it('does not repeat lookups when an investigation is resumed', async () => {

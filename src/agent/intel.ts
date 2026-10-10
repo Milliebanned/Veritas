@@ -1,5 +1,5 @@
 import semver from 'semver';
-import { traced } from '../observability/neatlogs.ts';
+import { note, traced } from '../observability/neatlogs.ts';
 import { Records, type FindingInput, type SourceInput } from '../state/records.ts';
 import { fetchAdvisories, type Advisory } from '../tools/advisories.ts';
 import { fetchReleaseNotes, type ReleaseNote } from '../tools/githubReleases.ts';
@@ -62,13 +62,7 @@ export function createInventoryHandler(tools: IntelTools): StateHandler {
       }),
     );
     await ctx.step('npm_audit', { commit }, () =>
-      tool('npm_audit', {}, async (): Promise<AuditEntry[] | Unavailable> => {
-        try {
-          return await tools.runNpmAudit(dir, ctx.limits.cmdTimeoutMs);
-        } catch (err) {
-          return { unavailable: `npm audit: ${message(err)}` };
-        }
-      }),
+      tool('npm_audit', {}, () => withRounds('npm audit', ESSENTIAL_ROUNDS, () => tools.runNpmAudit(dir, ctx.limits.cmdTimeoutMs))),
     );
     return 'INTEL';
   };
@@ -139,16 +133,26 @@ function advisoryFinding(
   };
 }
 
-async function lookup<T>(ctx: RunContext, name: string, input: Record<string, unknown>, fn: () => Promise<T>): Promise<T | Unavailable> {
-  return ctx.step(name, input, () =>
-    tool(name, { package: String(input.name) }, async (): Promise<T | Unavailable> => {
-      try {
-        return await fn();
-      } catch (err) {
-        return { unavailable: `${name} for ${String(input.name)}: ${message(err)}` };
-      }
-    }),
-  );
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const roundWaitMs = () => Number(process.env.VERITAS_LOOKUP_WAIT_MS ?? 15_000);
+/** Lookups nothing else can stand in for get further rounds, spaced out, after the HTTP layer's own quick retries are spent. */
+const ESSENTIAL_ROUNDS = 2;
+
+/** Runs fn, and after a failure waits and tries again for up to `extraRounds` more rounds. */
+async function withRounds<T>(what: string, extraRounds: number, fn: () => Promise<T>): Promise<T | Unavailable> {
+  for (let round = 0; ; round++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (round >= extraRounds) return { unavailable: `${what}: ${message(err)}` };
+      note('{what} failed ({error}); waiting {wait} ms before round {next}', { what, error: message(err), wait: roundWaitMs(), next: round + 2, level: 'warn' });
+      await sleep(roundWaitMs());
+    }
+  }
+}
+
+async function lookup<T>(ctx: RunContext, name: string, input: Record<string, unknown>, fn: () => Promise<T>, extraRounds = 0): Promise<T | Unavailable> {
+  return ctx.step(name, input, () => tool(name, { package: String(input.name) }, () => withRounds(`${name} for ${String(input.name)}`, extraRounds, fn)));
 }
 
 const failed = (value: unknown): value is Unavailable => typeof value === 'object' && value !== null && 'unavailable' in value;
@@ -169,9 +173,15 @@ export function createIntelHandler(tools: IntelTools): StateHandler {
         const fetched = await tools.fetchPackageInfo(dep.name, dep.installed);
         records.setRegistryInfo(ctx.investigationId, dep.name, fetched.latest, fetched.deprecated);
         return fetched;
-      });
+      }, ESSENTIAL_ROUNDS);
       if (failed(info)) {
+        // Without the registry nothing can be concluded about this package. Say so, instead of reporting nothing.
         unavailable.push(info.unavailable);
+        records.saveFinding(
+          ctx.investigationId,
+          { package: dep.name, kind: 'unchecked', status: 'unresolved', severity: null, rationale: `${dep.name}@${dep.installed} could not be checked: the npm registry did not answer after repeated attempts. No conclusion was reached about this package.` },
+          [],
+        );
         continue;
       }
 

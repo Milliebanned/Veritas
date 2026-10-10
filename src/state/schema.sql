@@ -117,3 +117,19 @@ CREATE TABLE IF NOT EXISTS llm_calls (
   duration_ms INTEGER,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS repairs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  investigation_id TEXT NOT NULL REFERENCES investigations(id),
+  package TEXT NOT NULL,
+  from_version TEXT NOT NULL,
+  target_version TEXT NOT NULL,
+  finding_ids TEXT NOT NULL,
+  branch TEXT NOT NULL,
+  base_commit TEXT,
+  bump_commit TEXT,
+  status TEXT NOT NULL DEFAULT 'planned',
+  attempts INTEGER NOT NULL DEFAULT 0,
+  note TEXT,
+  UNIQUE (investigation_id, package)
+);
