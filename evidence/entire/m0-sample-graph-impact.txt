@@ -1,0 +1,16 @@
+Index: cache-hit (77ms) | Query: 0ms | Total: 77ms
+Impact: formatError (src/log.js:2) def=2 span=2-2 [function]
+Blast radius: 2 callers (1 direct, 1 transitive), 1 callee, 0 type consumers, 1 data flow, 0 co-change files, 0 siblings.
+Callers (1 direct, 1 transitive; who breaks if behavior changes):
+- report (src/report.js:2)
+- report.test.js (test/report.test.js) [via report]
+Callees (1; what it depends on):
+- chalk.red
+Type consumers (0 in, 0 out; USES_TYPE/PARAM_TYPE/RETURNS_TYPE):
+- none
+Data flows (0 in, 1 out):
+- -> report (src/report.js:2)
+Co-change coupling (0; files that historically change with src/log.js):
+- none
+Same-container siblings (0):
+- none

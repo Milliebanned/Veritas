@@ -100,7 +100,7 @@ This is the originality argument for judging (10%). The pitch and video lead wit
 
 | Area | Choice | Why |
 |---|---|---|
-| Language | TypeScript on Node.js 20 | One language for agent, server and UI. Node 20 is pinned on purpose: newer Node can `require()` ES modules, which would hide the ESM-only breakages in the benchmark. [To verify exact behaviour in M0] |
+| Language | TypeScript on Node.js 22+ (v24 on the dev machine) | One language for agent, server and UI. [Verified in M0] Node 22+ can `require()` ES modules, but ESM-only packages still break CommonJS callers: `require('chalk')` returns a namespace object and `chalk.red` is not a function. Node 20 fails earlier with `ERR_REQUIRE_ESM`. Each benchmark case records the Node version it was reproduced on, and the sandbox runs that version. |
 | Model access | `openai` npm client pointed at the hackathon LiteLLM endpoint | Free $20 budget; OpenAI-compatible [Verified]. No Bedrock on the AWS account [Verified]. |
 | Models | `claude-haiku` for development, `claude-sonnet-4.6` for scored runs | Protects the $20 cap. IDs [Verified] on the models page. |
 | Tracing | `neatlogs` npm package: `init`, `wrapOpenAI`, `span`, `trace`, `flush`, `shutdown` | [Verified] in the TypeScript SDK docs. No auto-instrumentation in TS, so wrappers are explicit. |
@@ -201,14 +201,16 @@ Large logs are files under the workspace; the table stores paths.
 
 | Source | Use | Status |
 |---|---|---|
-| npm registry `https://registry.npmjs.org/<package>` | Versions, `deprecated` field, repository URL | [To verify] response fields in M0 |
-| `npm outdated --json`, `npm ls --all --json`, `npm audit --json` | Inventory and advisories for the installed tree | [To verify] output shapes in M0 |
-| GitHub REST: releases for a repo | Release notes | [To verify] |
-| GitHub Advisory Database (REST global advisories) | Published advisories for npm packages | [To verify] endpoint and filters |
-| OSV (`api.osv.dev`) | Second advisory source | [To verify]; optional |
+| npm registry `https://registry.npmjs.org/<package>` | Versions, `deprecated` field, repository URL | [Verified in M0] |
+| `npm outdated --json`, `npm ls --all --json`, `npm audit --json` | Inventory and advisories for the installed tree | [Verified in M0]; `outdated` and `audit` exit 1 when they have findings |
+| GitHub REST: releases for a repo | Release notes | [Verified in M0] |
+| GitHub Advisory Database (REST global advisories) | Published advisories for npm packages | [Verified in M0]: `GET /advisories?ecosystem=npm&affects=<pkg>@<version>` |
+| OSV (`api.osv.dev`) | Second advisory source | [Verified in M0]; optional |
 | Package `CHANGELOG.md` from the published tarball or repo | Fallback when releases are empty | [Assumption] |
 | LiteLLM `https://litellm.vision.aivar.app/v1` | Models | [Verified] |
 | Crustdata | Not used | Optional per rules |
+
+Observed response shapes are in `evidence/m0-verification.md`.
 
 Every stored source records its URL and whether the claim was read from the source (`verified = true`) or inferred by the model (`false`). The report shows them separately.
 
@@ -219,10 +221,10 @@ Every stored source records its URL and whether the claim was read from the sour
 **Step A, cheap filter (no model):** search the repo for imports or requires of the package. No usage means `not_affected` immediately.
 
 **Step B, usage map:** an `ImpactProvider` interface with two implementations:
-- **`GraphProvider`** shells out to `entire graph`: `search --query`, `impact --symbol`, `neighbors --symbol`. Commands and flags are [Verified] in the CLI reference. Docs describe running them "for automation".
+- **`GraphProvider`** shells out to `entire graph`. [Verified in M0] `edges` (NDJSON) lists package usage directly as `IMPORTS` to `external:import:<pkg>` and `CALLS` to `external:symbol:<pkg>.<member>` with file and line; `neighbors --symbol` (JSON) gives callers. `impact --symbol` prints text only, so its output is stored as evidence and not parsed.
 - **`FallbackProvider`** uses the TypeScript compiler API to resolve imports and references.
 
-`entire graph capabilities --json` is run in M0. **If JavaScript/TypeScript is not supported, the fallback becomes primary** and Entire's runtime role moves to `entire graph diff`/`commit` on Veritas's own patch branch, or is dropped to build-time only. [To verify: language support, Linux install on EC2, whether login or network is needed.]
+[Verified in M0] JavaScript and TypeScript are supported with import and call relations, and the graph needs no login and no network, so `GraphProvider` is primary and the fallback covers what the graph misses. [To verify in M10: install on the EC2 instance; a `linux_amd64` release asset exists.]
 
 **Step C, reasoning:** the model receives only the changed-API list and the matching call sites (never the whole repo) and returns, per site, "affected / not affected / unsure" with a reason.
 
@@ -249,7 +251,7 @@ Weights are an [Assumption], documented in the README.
    - the same tests pass after;
    - no test that passed at baseline now fails;
    - the diff touches only files named in the repair plan, or the extra files are explained.
-   Optional cross-check: `entire graph verify` with a recorded baseline [To verify usage].
+   Optional cross-check: `entire graph verify` with `--record-baseline` before the patch and `--pre-edit-baseline` after [Verified in M0]. It names changed tests for jest and vitest only, and otherwise reports pass or fail from the exit code, so Veritas's own test runner stays the source of truth.
 6. **Otherwise** the status is `unresolved`, with the last diagnosis. Generated code alone never counts as success.
 
 ## 16. neatlogs integration plan
@@ -258,7 +260,7 @@ Docs: https://docs.neatlogs.com/sdk/typescript and https://docs.neatlogs.com/doc
 
 - **Install:** `npm install neatlogs@latest` [Verified]. Try `npx @neatlogs/wizard` first; keep its changes only if they match the manual setup below.
 - **Init** (`src/observability/neatlogs.ts`): `await init({ apiKey: process.env.NEATLOGS_API_KEY, workflowName: 'veritas' })`; `await flush(); await shutdown();` on exit [Verified].
-- **Model calls:** `wrapOpenAI(new OpenAI({ baseURL, apiKey }))`. [To verify in M0: that traces appear when `baseURL` is the LiteLLM endpoint. The docs do not confirm it. Fallback: wrap each model call in `trace()` and set attributes manually.]
+- **Model calls:** `wrapOpenAI(new OpenAI({ baseURL, apiKey }))`. [Verified in M0] Traces appear with `baseURL` set to the LiteLLM endpoint, with token counts. [To verify: whether neatlogs shows cost for the LiteLLM model names; if not, cost is computed from tokens.]
 - **Structure:** one `span({ kind: 'WORKFLOW' })` per investigation so all calls nest in one trace; each state a child span; each tool a `span({ kind: 'TOOL', toolName })` [Verified API].
 - **Attributes:** investigation id, state, finding, attempt number, outcome, via `activeSpan.setAttribute` [Verified method; attribute names are our own].
 - **Errors and retries:** `span()` captures errors [Verified]. Each retry is its own span with an `attempt` attribute. No dedicated retry API is assumed.
@@ -296,7 +298,7 @@ git commit -m "Enable entire-graph"
 
 **Run time:** section 14.
 
-**Evidence** in `evidence/entire/`: `entire checkpoint list` output, screenshots of checkpoints on entire.io, one captured entire-graph answer from a coding-agent session, one captured `entire graph impact` output from a Veritas run. [To verify: how checkpoints reach entire.io and whether judges can view them.]
+**Evidence** in `evidence/entire/`: `entire checkpoint list` output, screenshots of checkpoints on entire.io, one captured entire-graph answer from a coding-agent session, one captured `entire graph impact` output from a Veritas run. [Verified in M0] Checkpoints are pushed to the GitHub repo as `refs/entire/checkpoints/*` by the pre-push hook. [To verify: whether judges can view them on entire.io without an account.]
 
 ## 18. cfo.ai business-planning workflow
 

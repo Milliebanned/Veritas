@@ -44,6 +44,16 @@ Findings to act on:
 - Milestone 1: SQLite state store (`node:sqlite`, no native dependency), step journal with idempotency keys, orchestrator state machine with enforced transitions, neatlogs tracing wrapper with named spans, CLI (`investigate`, `resume`, `status`). All state handlers are stubs.
 - Tests that ran: `npx vitest run` — 6 passed, 0 failed (journal reuse, failure retry, stub pipeline, crash and resume, illegal transition). `npx tsc --noEmit` clean.
 - A stub investigation ran end to end through the CLI with tracing on.
+- Milestone 0 verification finished for everything checkable from the dev machine: npm registry fields, `npm outdated` / `ls` / `audit` JSON, GitHub releases and advisories, OSV, `entire graph` on a CommonJS sample, `entire graph verify`, and checkpoint refs on the remote. Results in `evidence/m0-verification.md`; the plan's labels are updated.
+- entire-graph `edges` output lists package usage directly (imports and call sites of an external package, with file and line). That is what the impact step will read.
+
+Found in Milestone 0 verification:
+- The `GITHUB_TOKEN` in `.env` is rejected by GitHub (401 Bad credentials). The public endpoints work without it at 60 requests per hour. It must be replaced before Milestone 3 and is required for opening pull requests.
+- On Node 24, `require()` of an ESM-only package no longer throws; the call site fails instead (`chalk.red is not a function`). Benchmark cases 1 and 2 still reproduce, but each case must record its Node version and the sandbox must match it.
+- `npm outdated --json` and `npm audit --json` exit 1 when they have findings. The npm tool must not treat that as a failure.
+- `entire graph impact` prints text only. The agent parses `edges` and `neighbors` and keeps `impact` output as evidence.
+
+Still to check by hand: whether neatlogs shows cost for the LiteLLM models, whether trace links and Entire checkpoints open in a logged-out browser, and whether cfo.ai accepts typed assumptions.
 
 Changed from the plan:
 - State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.
