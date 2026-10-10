@@ -1,5 +1,8 @@
+import type { Chat } from '../llm/client.ts';
+import { createImpactHandler, type ImpactProvider } from './impact.ts';
 import { intake } from './intake.ts';
 import { createInventoryHandler, createIntelHandler, realTools, type IntelTools } from './intel.ts';
+import { prioritize } from './prioritize.ts';
 import type { Handlers, State, StateHandler } from './states.ts';
 
 /** Placeholder for a state that is not implemented yet: records one step and moves on. */
@@ -27,12 +30,14 @@ export const stubHandlers: Handlers = {
 };
 
 /** Handlers are replaced one by one as each state is implemented. */
-export function createHandlers(tools: IntelTools = realTools): Handlers {
+export function createHandlers(tools: IntelTools = realTools, deps: { chat?: Chat; provider?: ImpactProvider } = {}): Handlers {
   return {
     ...stubHandlers,
     INTAKE: intake,
     INVENTORY: createInventoryHandler(tools),
     INTEL: createIntelHandler(tools),
+    IMPACT: createImpactHandler(deps),
+    PRIORITIZE: prioritize,
   };
 }
 

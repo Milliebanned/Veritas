@@ -46,6 +46,14 @@ export interface SourceRecord {
   verified: number;
 }
 
+export interface AffectedSiteRecord {
+  finding_id: string;
+  file: string;
+  line: number | null;
+  symbol: string | null;
+  provider: string;
+}
+
 /** One finding per package and kind in an investigation, so writing it again replaces it. */
 export const findingId = (investigationId: string, kind: string, pkg: string) =>
   createHash('sha256').update(`${investigationId}\n${kind}\n${pkg}`).digest('hex').slice(0, 16);
@@ -85,6 +93,37 @@ export class Records {
     return id;
   }
 
+  /** Records what impact analysis concluded for a finding and where the package is used. */
+  saveImpact(
+    findingId: string,
+    impact: { status: FindingStatus; confidence: number; usageScore: number; rationale: string },
+    sites: { file: string; line: number | null; symbol: string | null; provider: string }[],
+  ): void {
+    this.db
+      .prepare('UPDATE findings SET status = ?, confidence = ?, usage_score = ?, rationale = ? WHERE id = ?')
+      .run(impact.status, impact.confidence, impact.usageScore, impact.rationale, findingId);
+    this.db.prepare('DELETE FROM affected_sites WHERE finding_id = ?').run(findingId);
+    const insert = this.db.prepare('INSERT INTO affected_sites (finding_id, file, line, symbol, provider) VALUES (?, ?, ?, ?, ?)');
+    for (const s of sites) insert.run(findingId, s.file, s.line, s.symbol, s.provider);
+  }
+
+  setPriority(findingId: string, priority: number): void {
+    this.db.prepare('UPDATE findings SET priority = ? WHERE id = ?').run(priority, findingId);
+  }
+
+  sourcesFor(findingId: string): SourceRecord[] {
+    return this.db.prepare('SELECT * FROM sources WHERE finding_id = ? ORDER BY id').all(findingId) as unknown as SourceRecord[];
+  }
+
+  affectedSites(investigationId: string): AffectedSiteRecord[] {
+    return this.db
+      .prepare(
+        `SELECT s.finding_id, s.file, s.line, s.symbol, s.provider FROM affected_sites s
+         JOIN findings f ON f.id = s.finding_id WHERE f.investigation_id = ? ORDER BY s.id`,
+      )
+      .all(investigationId) as unknown as AffectedSiteRecord[];
+  }
+
   dependencies(investigationId: string): DependencyRecord[] {
     return this.db
       .prepare('SELECT name, installed, latest, direct, deprecated FROM dependencies WHERE investigation_id = ? ORDER BY direct DESC, name')
@@ -93,7 +132,7 @@ export class Records {
 
   findings(investigationId: string): FindingRecord[] {
     return this.db
-      .prepare('SELECT * FROM findings WHERE investigation_id = ? ORDER BY package, kind')
+      .prepare('SELECT * FROM findings WHERE investigation_id = ? ORDER BY priority DESC NULLS LAST, package, kind')
       .all(investigationId) as unknown as FindingRecord[];
   }
 

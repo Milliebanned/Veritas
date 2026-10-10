@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createHandlers } from '../src/agent/handlers.ts';
+import { createHandlers, stubHandlers } from '../src/agent/handlers.ts';
 import { realTools, type IntelSummary, type IntelTools } from '../src/agent/intel.ts';
 import { repoDir } from '../src/agent/intake.ts';
 import { loadLimits } from '../src/agent/limits.ts';
@@ -43,9 +43,12 @@ function recordedTools(calls: string[], overrides: Partial<IntelTools> = {}): In
   };
 }
 
+/** The states under test are real; impact analysis and prioritisation have their own tests. */
+const upToIntel = (tools: IntelTools) => ({ ...createHandlers(tools), IMPACT: stubHandlers.IMPACT, PRIORITIZE: stubHandlers.PRIORITIZE });
+
 async function investigate(caseId: string, tools: IntelTools) {
   const db = openDb(':memory:');
-  const orchestrator = new Orchestrator({ db, handlers: createHandlers(tools), limits: loadLimits() });
+  const orchestrator = new Orchestrator({ db, handlers: upToIntel(tools), limits: loadLimits() });
   const inv = await orchestrator.run(orchestrator.start(`bench/cases/${caseId}/repo`).id);
   return { db, inv, orchestrator, records: new Records(db), journal: new Journal(db) };
 }
@@ -103,7 +106,7 @@ describe('intake, inventory and intel', () => {
     let crash = true;
     const tools = recordedTools(calls);
     const db = openDb(':memory:');
-    const handlers = createHandlers(tools);
+    const handlers = upToIntel(tools);
     const intel = handlers.INTEL;
     handlers.INTEL = async (ctx) => {
       const next = await intel(ctx);
