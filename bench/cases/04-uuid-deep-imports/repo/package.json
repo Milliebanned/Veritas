@@ -1,0 +1,12 @@
+{
+  "name": "id-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generates record ids and stable keys",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "uuid": "3.4.0"
+  }
+}

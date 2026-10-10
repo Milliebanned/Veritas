@@ -1,0 +1,22 @@
+id: 03-marked-default-export
+title: marked 3 to 18 (the default export was removed in 4.0.0; use the named export)
+type: breaking
+package: marked
+from: 3.0.8
+to: 18.1.0
+test_command: npm test
+# Where the change is documented. Each quote was read from the page on 2026-10-10.
+sources:
+  - url: https://github.com/markedjs/marked/releases/tag/v4.0.0
+    quote: "Default export removed. Use `import { marked } from 'marked'` or `const { marked } = require('marked')` instead."
+# Advisories that `npm audit` reports for the starting version (2026-10-10). Reporting these is correct, not a false positive.
+advisories:
+  - GHSA-rrrm-qjm4-v8hf
+  - GHSA-5v2h-r2cx-5xgj
+expected:
+  verdict: affected
+  finding_kind: breaking
+  fixable: true
+  # src/outline.js also requires marked but only uses marked.lexer, which still works.
+  affected_files:
+    - src/render.js

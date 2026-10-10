@@ -1,0 +1,12 @@
+{
+  "name": "status-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reports service status over HTTP",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "express": "4.22.3"
+  }
+}

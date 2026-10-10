@@ -1,0 +1,12 @@
+{
+  "name": "notes-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Renders markdown notes to HTML",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "marked": "3.0.8"
+  }
+}

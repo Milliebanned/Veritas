@@ -1,0 +1,21 @@
+id: 04-uuid-deep-imports
+title: uuid 3 to 14 (deep imports such as uuid/v4 were removed in 8.0.0)
+type: breaking
+package: uuid
+from: 3.4.0
+to: 14.0.3
+test_command: npm test
+# Where the change is documented. Each quote was read from the page on 2026-10-10.
+sources:
+  - url: https://github.com/uuidjs/uuid/blob/main/CHANGELOG.md
+    quote: "Deep requiring specific algorithms of this library like `require('uuid/v4')`, which has been deprecated in `uuid@7`, is no longer supported."
+# Advisories that `npm audit` reports for the starting version (2026-10-10). Reporting these is correct, not a false positive.
+advisories:
+  - GHSA-w5hq-g745-h8pq
+expected:
+  verdict: affected
+  finding_kind: breaking
+  fixable: true
+  affected_files:
+    - src/ids.js
+    - src/keys.js

@@ -1,0 +1,12 @@
+{
+  "name": "settings-builder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Builds nested settings objects from flat input",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "lodash": "4.17.15"
+  }
+}

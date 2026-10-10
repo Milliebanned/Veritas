@@ -1,0 +1,13 @@
+id: 08-control-outdated-only
+title: "Control: semver 7.5.4 is behind the latest 7.x, with no breaking change and no advisory"
+type: control
+package: semver
+from: 7.5.4
+to: 7.8.5
+test_command: npm test
+advisories: []
+expected:
+  verdict: no_finding
+  finding_kind: none
+  fixable: false
+  affected_files: []

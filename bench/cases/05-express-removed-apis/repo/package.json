@@ -1,0 +1,12 @@
+{
+  "name": "items-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Small REST API for items",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "express": "4.22.3"
+  }
+}

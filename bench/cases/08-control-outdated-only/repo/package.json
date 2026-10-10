@@ -1,0 +1,12 @@
+{
+  "name": "release-check",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Checks whether a release satisfies a version range",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "semver": "7.5.4"
+  }
+}

@@ -1,0 +1,19 @@
+id: 01-chalk-esm-only
+title: chalk 4 to 6 in a CommonJS project (package became ESM-only in 5.0.0)
+type: breaking
+package: chalk
+from: 4.1.2
+to: 6.0.1
+test_command: npm test
+# Where the change is documented. Each quote was read from the page on 2026-10-10.
+sources:
+  - url: https://github.com/chalk/chalk/releases/tag/v5.0.0
+    quote: "This package is now pure ESM."
+advisories: []
+expected:
+  verdict: affected
+  finding_kind: breaking
+  fixable: true
+  affected_files:
+    - src/format.js
+    - src/banner.js

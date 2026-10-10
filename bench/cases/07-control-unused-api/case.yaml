@@ -1,0 +1,17 @@
+id: 07-control-unused-api
+title: "Control: express 4 to 5, but the project uses none of the removed APIs"
+type: control
+package: express
+from: 4.22.3
+to: 5.3.0
+test_command: npm test
+# Where the change is documented. Each quote was read from the page on 2026-10-10.
+sources:
+  - url: https://expressjs.com/en/guide/migrating-5.html
+    quote: "Removed methods and properties: app.del(), req.param(name), res.json(obj, status), res.send(status), res.sendfile()"
+advisories: []
+expected:
+  verdict: not_affected
+  finding_kind: none
+  fixable: false
+  affected_files: []

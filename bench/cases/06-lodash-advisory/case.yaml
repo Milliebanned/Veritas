@@ -1,0 +1,23 @@
+id: 06-lodash-advisory
+title: lodash 4.17.15 has published advisories fixed in later 4.x releases
+type: advisory
+package: lodash
+from: 4.17.15
+to: 4.18.1
+test_command: npm test
+# Advisories that `npm audit` reports for the starting version (2026-10-10). Reporting these is correct, not a false positive.
+advisories:
+  - GHSA-35jh-r3h4-6jhm
+  - GHSA-p6mc-m468-83gw
+  - GHSA-29mw-wpgm-hmr9
+  - GHSA-r5fr-rjxr-66jc
+  - GHSA-f23m-r3pf-42rh
+  - GHSA-xxjr-mmjv-4gpg
+expected:
+  verdict: affected
+  finding_kind: advisory
+  fixable: true
+  # For an advisory case, affected files are the files that use the package.
+  affected_files:
+    - src/settings.js
+    - src/labels.js
