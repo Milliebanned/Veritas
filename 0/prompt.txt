@@ -1,0 +1,17 @@
+draft the post with media that correspond that i can use. also analyse for me the milestone 5 and what we need to archieve it. how it works also must be said
+
+---
+
+the trace are still processing, also what will do the fixing part?
+
+---
+
+can i upload this creenshot. also, why will claude make the fix. cant neatlog do it, i mean cant neatlog fix it.
+
+let me give you a clear instruction, anything that the three tools is capable to do must not be given to any other external tools. anything must first be verify againts the three main tools, the delegation should only happen if they can genuienly do it. cause i heard neatlog can do the fixing part or something
+
+---
+
+now, do all what you need to with neatlogs now, cause if you failed to use it properly, we would lose the hackathon right from the start. all what neatlog needs to do, let it start doing it now!
+
+as for Entire, use exactly all what it can work for.
