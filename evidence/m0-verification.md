@@ -18,7 +18,7 @@ Run on 2026-10-10 from the dev machine (macOS arm64, Node v24.20.0, npm 11.19.0,
 | OSV (13) | Confirmed | |
 | Checkpoints reach the remote (17) | Confirmed | Pushed as `refs/entire/checkpoints/*` |
 | Entire CLI on Linux (14) | Release asset exists; install not yet run | Run on EC2 in M10 |
-| `GITHUB_TOKEN` in `.env` | **Fails: 401 Bad credentials** | Owner must replace it before M3 |
+| `GITHUB_TOKEN` in `.env` | First token failed with 401; replaced and confirmed (scope `repo`, 5,000 requests per hour) | Ready for M3 and for opening pull requests |
 | neatlogs shows cost for LiteLLM models (16) | Not verified | Needs a look at the neatlogs UI |
 | Trace links viewable outside the account (16) | Not verified | Needs a logged-out browser |
 | Checkpoints viewable by judges on entire.io (17) | Not verified | Needs a logged-out browser |

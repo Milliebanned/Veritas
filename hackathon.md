@@ -48,7 +48,7 @@ Findings to act on:
 - entire-graph `edges` output lists package usage directly (imports and call sites of an external package, with file and line). That is what the impact step will read.
 
 Found in Milestone 0 verification:
-- The `GITHUB_TOKEN` in `.env` is rejected by GitHub (401 Bad credentials). The public endpoints work without it at 60 requests per hour. It must be replaced before Milestone 3 and is required for opening pull requests.
+- The first `GITHUB_TOKEN` in `.env` was rejected by GitHub (401 Bad credentials). It was replaced the same day; the new token is accepted with the `repo` scope and a 5,000 requests per hour limit.
 - On Node 24, `require()` of an ESM-only package no longer throws; the call site fails instead (`chalk.red is not a function`). Benchmark cases 1 and 2 still reproduce, but each case must record its Node version and the sandbox must match it.
 - `npm outdated --json` and `npm audit --json` exit 1 when they have findings. The npm tool must not treat that as a failure.
 - `entire graph impact` prints text only. The agent parses `edges` and `neighbors` and keeps `impact` output as evidence.
