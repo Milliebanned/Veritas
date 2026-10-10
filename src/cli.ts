@@ -40,7 +40,7 @@ async function main(): Promise<number> {
   if (command === 'export') {
     if (!arg || !journal.getInvestigation(arg)) return fail(`Unknown investigation ${arg ?? ''}`);
     const records = new Records(db);
-    console.log(JSON.stringify({ investigation: journal.getInvestigation(arg), dependencies: records.dependencies(arg), findings: records.findings(arg), affected_sites: records.affectedSites(arg), sources: records.sources(arg), usage: usageFor(db, arg) }, null, 2));
+    console.log(JSON.stringify({ investigation: journal.getInvestigation(arg), dependencies: records.dependencies(arg), findings: records.findings(arg), affected_sites: records.affectedSites(arg), repairs: records.repairs(arg), attempts: records.attempts(arg), test_runs: records.testRuns(arg), sources: records.sources(arg), usage: usageFor(db, arg) }, null, 2));
     return 0;
   }
 

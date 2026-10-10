@@ -44,7 +44,10 @@ function recordedTools(calls: string[], overrides: Partial<IntelTools> = {}): In
 }
 
 /** The states under test are real; impact analysis and prioritisation have their own tests. */
-const upToIntel = (tools: IntelTools) => ({ ...createHandlers(tools), IMPACT: stubHandlers.IMPACT, PRIORITIZE: stubHandlers.PRIORITIZE });
+const upToIntel = (tools: IntelTools) => {
+  const { INTAKE, INVENTORY, INTEL } = createHandlers(tools);
+  return { ...stubHandlers, INTAKE, INVENTORY, INTEL };
+};
 
 async function investigate(caseId: string, tools: IntelTools) {
   const db = openDb(':memory:');

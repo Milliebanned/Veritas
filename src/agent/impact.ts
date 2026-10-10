@@ -58,7 +58,7 @@ export interface ImpactResult {
 const MAX_FILE_LINES = 250;
 const MAX_SOURCE_CHARS = 24_000;
 
-function readFileTool(dir: string): LoopTool {
+export function readFileTool(dir: string): LoopTool {
   return {
     name: 'read_file',
     description: `Read a source file from the project, with line numbers. Returns at most ${MAX_FILE_LINES} lines; pass start_line to read further.`,
@@ -79,7 +79,7 @@ function readFileTool(dir: string): LoopTool {
   };
 }
 
-function searchTool(dir: string, provider: ImpactProvider): LoopTool {
+export function searchTool(dir: string, provider: ImpactProvider): LoopTool {
   return {
     name: 'search_code',
     description: 'Search the project with the code graph. Describe what you are looking for, or name a function or method (for example "routes that call req.param" or "app.del"). Returns the best-matching functions with file and line.',
@@ -91,7 +91,7 @@ function searchTool(dir: string, provider: ImpactProvider): LoopTool {
   };
 }
 
-function callersTool(dir: string, provider: ImpactProvider): LoopTool {
+export function callersTool(dir: string, provider: ImpactProvider): LoopTool {
   return {
     name: 'find_callers',
     description: 'List the functions that call a named function in this project, from the code graph. Use it to see how far a broken function reaches.',
@@ -103,7 +103,7 @@ function callersTool(dir: string, provider: ImpactProvider): LoopTool {
   };
 }
 
-function describeRuntime(dir: string): string {
+export function describeRuntime(dir: string): string {
   const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as { type?: string; engines?: { node?: string } };
   return [
     `Project module system: ${manifest.type === 'module' ? 'ES modules ("type": "module")' : 'CommonJS (no "type": "module" in package.json)'}`,
