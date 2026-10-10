@@ -54,6 +54,24 @@ describe('edit tool', () => {
     expect(readFileSync(join(root, 'src', 'a.js'), 'utf8')).toContain("const x = load('$&$1');");
   });
 
+  it('accepts text that differs from the file only in leading indentation, and re-indents the replacement', () => {
+    const root = project();
+    writeFileSync(join(root, 'src', 'b.js'), 'function f() {\n  if (x) {\n    call(1);\n  }\n}\n');
+    // The model copied the block with two extra spaces on every line, as seen in trace 85740ee5c9d3c5369bd1b1ae7602c248.
+    applyEdit(root, { file: 'src/b.js', oldText: '    if (x) {\n      call(1);\n    }', newText: '    if (x) {\n      call(2);\n    }' });
+    expect(readFileSync(join(root, 'src', 'b.js'), 'utf8')).toBe('function f() {\n  if (x) {\n    call(2);\n  }\n}\n');
+    // And with too little indentation.
+    applyEdit(root, { file: 'src/b.js', oldText: 'if (x) {\n  call(2);\n}', newText: 'if (x) {\n  call(3);\n  call(4);\n}' });
+    expect(readFileSync(join(root, 'src', 'b.js'), 'utf8')).toBe('function f() {\n  if (x) {\n    call(3);\n    call(4);\n  }\n}\n');
+  });
+
+  it('refuses an indentation-only match that fits more than one place', () => {
+    const root = project();
+    writeFileSync(join(root, 'src', 'c.js'), 'a();\n  done();\nb();\n    done();\n');
+    expect(() => applyEdit(root, { file: 'src/c.js', oldText: '      done();', newText: 'stop();' })).toThrow(/appears 2 times/);
+    expect(readFileSync(join(root, 'src', 'c.js'), 'utf8')).toBe('a();\n  done();\nb();\n    done();\n');
+  });
+
   it('refuses text that is missing or matches more than once', () => {
     const root = project();
     expect(() => applyEdit(root, { file: 'src/a.js', oldText: 'nope', newText: 'y' })).toThrow(/was not found/);

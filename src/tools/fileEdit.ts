@@ -48,10 +48,10 @@ export function applyEdit(root: string, edit: EditRequest): { file: string; line
     for (let i = 0; i <= beforeLines.length - oldLines.length; i++) {
       let match = true;
       for (let j = 0; j < oldLines.length; j++) {
-        if (beforeLines[i + j].replace(/^[ \t]*/, '') !== oldLines[j].replace(/^[ \t]*/, '')) {
+        if ((beforeLines[i + j] ?? '').replace(/^[ \t]*/, '') !== (oldLines[j] ?? '').replace(/^[ \t]*/, '')) {
           match = false;
           break;
-        } 
+        }
       }
       if (match) {
         matchIndices.push(i);
@@ -65,14 +65,14 @@ export function applyEdit(root: string, edit: EditRequest): { file: string; line
       throw new EditRejected(`old_text appears ${matchIndices.length} times in ${file}. Include more surrounding lines so it matches once.`);
     }
 
-    const startIdx = matchIndices[0];
+    const startIdx = matchIndices[0] ?? 0;
     const getLeadingWhitespace = (line: string) => {
       const m = line.match(/^[ \t]*/);
       return m ? m[0] : '';
     };
 
-    const fileIndent = getLeadingWhitespace(beforeLines[startIdx]);
-    const oldIndent = getLeadingWhitespace(oldLines[0]);
+    const fileIndent = getLeadingWhitespace(beforeLines[startIdx] ?? '');
+    const oldIndent = getLeadingWhitespace(oldLines[0] ?? '');
 
     const newLines = edit.newText.split('\n');
     let adjustedNewLines: string[];
