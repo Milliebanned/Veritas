@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4KF8ZW31ZV1B6QF0B4P5QRV",
+  "strategy": "manual-commit",
+  "branch": "m5-repair",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "bench/run.mts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 11211,
+    "cache_read_tokens": 5991436,
+    "output_tokens": 9506,
+    "api_call_count": 11
+  }
+}
