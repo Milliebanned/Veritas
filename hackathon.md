@@ -86,6 +86,22 @@ Still to check by hand: whether Entire checkpoints open in a logged-out browser,
 - The one failure was real and was not the model's. During the chalk case the npm registry timed out for about a minute. The quick retries ran out and the agent then reported no finding for chalk, as if the package were fine. That is a wrong answer delivered silently, which is the thing Veritas exists to prevent.
 - Fix: registry and audit lookups now get two more rounds, 15 seconds apart, after the quick retries; and if the registry still does not answer, the package is recorded as `unchecked` and `unresolved` with the reason, never as clean. Two tests cover it. Rerunning the chalk case afterwards (`evidence/bench/dev-m5-chalk-rerun.json`): correct verdict, both files named, repaired on the first attempt, acceptance test passes.
 - Not yet seen: a real failed attempt followed by a recovery. Every repair succeeded on its first attempt, including the express case with three removed APIs. The recovery path is covered by tests with a scripted model only. No failure has been staged.
+- First improvement found and fixed through neatlogs. Its "Execution Failed" detection flagged the express run (trace `85740ee5c9d3c5369bd1b1ae7602c248`): inside one repair attempt, 12 of 14 `apply_edit` calls were refused with "old_text was not found". The run still ended green, so the benchmark alone did not show it. A new detection, "Edit did not match the file", now flags this (11 occurrences in the backfill).
+- neat AI investigated the trace, read the repository and pointed at `applyEdit`. Its first proposed fix (normalising line endings and trailing spaces) did not match the evidence: in the local span copy, all 12 refused edits matched the file once leading indentation was ignored, each with two extra spaces. Cause: `read_file` showed lines as a padded number, two spaces, then the code, so the model could not tell padding from indentation. neat AI was given that evidence and revised the fix.
+- neat AI opened pull request #2 ("Accept edits that differ only in leading indentation") from its own branch, as `neatlogs[bot]`: when an exact match fails, `applyEdit` accepts a match that is unique once leading indentation is ignored and re-indents the replacement. As submitted it passed the 67 tests but failed the type check (4 strictness errors). Follow-up commits on the same pull request fix those, add two tests, and change `read_file` to show `<line>| <text>`.
+- Measured on the same case, same model (`claude-haiku`), before (`evidence/bench/dev-m5.json`) and after (`evidence/bench/after-neatlogs-fix-express.json`):
+
+  | express 4 to 5 repair | Before | After |
+  |---|---|---|
+  | `apply_edit` calls | 14 | 3 |
+  | Refused edits | 12 | 0 |
+  | Cost | $0.1401 | $0.0533 |
+  | Duration | 59 s | 38 s |
+  | Result | fixed, acceptance passes | fixed, acceptance passes |
+
+  One case, one run each side; the full benchmark comparison is still to come.
+- Limits met in neatlogs: the neat AI chat ran out of length twice while trying to rewrite larger files for a pull request, and succeeded when the change was limited to one 48-line file. neatlogs shows $0 cost on the agent's traces although tokens are correct. The project still reports tier `free` and an empty repository field through the MCP server, although GitHub and Claude Code are connected in the UI.
+- Tests that ran: `npx vitest run` — 69 passed. `npx tsc --noEmit` clean.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
