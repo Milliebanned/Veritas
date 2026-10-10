@@ -22,8 +22,8 @@ describe('journal', () => {
     const first = await journal.runStep(inv.id, 'INTAKE', 'clone', { url: 'x' }, body);
     const second = await journal.runStep(inv.id, 'INTAKE', 'clone', { url: 'x' }, body);
 
-    expect(first).toEqual({ output: { n: 1 }, reused: false });
-    expect(second).toEqual({ output: { n: 1 }, reused: true });
+    expect(first).toEqual({ output: { n: 1 }, reused: false, attempt: 1 });
+    expect(second).toEqual({ output: { n: 1 }, reused: true, attempt: 1 });
     expect(calls).toBe(1);
   });
 
@@ -40,7 +40,7 @@ describe('journal', () => {
     expect(journal.steps(inv.id)[0]).toMatchObject({ status: 'failed', error: 'Error: boom', attempt: 1 });
 
     const retry = await journal.runStep(inv.id, 'INTAKE', 'fetch', null, flaky);
-    expect(retry).toEqual({ output: 'ok', reused: false });
+    expect(retry).toEqual({ output: 'ok', reused: false, attempt: 2 });
     expect(journal.steps(inv.id)[0]).toMatchObject({ status: 'done', error: null, attempt: 2 });
   });
 });

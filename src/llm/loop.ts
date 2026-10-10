@@ -1,5 +1,5 @@
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions';
-import { traced } from '../observability/neatlogs.ts';
+import { guarded, note, traced } from '../observability/neatlogs.ts';
 import type { Chat, LlmCallContext } from './client.ts';
 
 export interface LoopTool {
@@ -101,11 +101,12 @@ export async function runToolLoop<T>(opts: LoopOptions<T>): Promise<LoopResult<T
 
       if (call.function.name === opts.submit.name) {
         try {
-          const result = opts.submit.parse(args);
+          const result = await guarded('submission', JSON.stringify(args), () => opts.submit.parse(args));
           toolCalls.push({ name: call.function.name, args, ok: true });
           return { result, toolCalls, turns: turn, costUsd };
         } catch (err) {
           toolCalls.push({ name: call.function.name, args, ok: false });
+          note('submission rejected: {reason}', { reason: (err as Error).message, level: 'warn' });
           if (++rejectedSubmissions > 1) throw new LoopFailed(`Model submitted an invalid answer twice: ${(err as Error).message}`);
           reply(`Error: the submission was rejected. ${(err as Error).message} Correct it and call ${opts.submit.name} again.`);
         }

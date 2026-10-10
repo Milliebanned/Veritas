@@ -1,6 +1,6 @@
 import type { Db } from '../state/db.ts';
 import { Journal, type Investigation } from '../state/journal.ts';
-import { traced } from '../observability/neatlogs.ts';
+import { note, traced, traceOutput } from '../observability/neatlogs.ts';
 import { loadLimits, type Limits } from './limits.ts';
 import { TRANSITIONS, type Handlers, type RunContext, type State } from './states.ts';
 
@@ -56,15 +56,23 @@ export class Orchestrator {
               throw new Error(`Illegal transition ${state} -> ${next}`);
             }
             this.journal.setState(investigationId, next);
+            note('state {from} -> {to}', { from: state, to: next });
             state = next;
           }
           this.journal.setStatus(investigationId, 'awaiting_approval');
         } catch (err) {
           this.journal.setStatus(investigationId, 'failed');
+          note('investigation failed in {state}: {error}', { state, error: err instanceof Error ? err.message : String(err), level: 'error' });
+          traceOutput({ status: 'failed', state, error: err instanceof Error ? err.message : String(err) });
           throw err;
         }
-        return this.journal.getInvestigation(investigationId)!;
+        const done = this.journal.getInvestigation(investigationId)!;
+        traceOutput({ status: done.status, state: done.current_state, repo: done.repo_url, steps: this.journal.steps(investigationId).length });
+        return done;
       },
+      undefined,
+      // One session per investigation: a resumed run is a second trace in the same session.
+      { sessionId: investigationId },
     );
   }
 
@@ -80,7 +88,12 @@ export class Orchestrator {
           traced(`step.${name}`, 'CHAIN', { state, step: name }, fn, input),
         );
         // A reused step still shows in the trace, marked, so skipped work is visible.
-        if (result.reused) await traced(`step.${name}`, 'CHAIN', { state, step: name, reused: true }, () => undefined);
+        if (result.reused) {
+          note('step {step} reused from the journal', { step: name, state });
+          await traced(`step.${name}`, 'CHAIN', { state, step: name, reused: true }, () => result.output, input);
+        } else if (result.attempt > 1) {
+          note('step {step} ran again, attempt {attempt}', { step: name, state, attempt: result.attempt });
+        }
         return result.output;
       },
     };

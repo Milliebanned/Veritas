@@ -29,6 +29,8 @@ export interface StepResult<T> {
   output: T;
   /** True when the output came from the journal and the step body did not run. */
   reused: boolean;
+  /** How many times this step has been started; above 1 means an earlier run failed or was interrupted. */
+  attempt: number;
 }
 
 /** JSON with sorted object keys, so equal inputs always hash the same. */
@@ -107,7 +109,7 @@ export class Journal {
       .get(investigationId, key) as StepRecord | undefined;
 
     if (prior?.status === 'done') {
-      return { output: JSON.parse(prior.output_json ?? 'null') as T, reused: true };
+      return { output: JSON.parse(prior.output_json ?? 'null') as T, reused: true, attempt: prior.attempt };
     }
 
     const startedAt = new Date().toISOString();
@@ -131,7 +133,7 @@ export class Journal {
     try {
       const output = await fn();
       finish.run('done', JSON.stringify(output ?? null), null, Date.now() - t0, investigationId, key);
-      return { output, reused: false };
+      return { output, reused: false, attempt: (prior?.attempt ?? 0) + 1 };
     } catch (err) {
       const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
       finish.run('failed', null, message, Date.now() - t0, investigationId, key);

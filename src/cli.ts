@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { handlers } from './agent/handlers.ts';
 import { Orchestrator } from './agent/orchestrator.ts';
 import { usageFor } from './llm/client.ts';
+import { publishPrompts } from './llm/prompts.ts';
 import { initTracing, shutdownTracing } from './observability/neatlogs.ts';
 import { openDb } from './state/db.ts';
 import { Journal } from './state/journal.ts';
@@ -15,6 +16,7 @@ Usage:
   veritas resume <investigation-id>        Continue an interrupted investigation
   veritas status [investigation-id]        Show investigations, or the steps of one
   veritas export <investigation-id>        Print dependencies, findings and sources as JSON
+  veritas prompts publish [message]        Publish the checked-in prompts to neatlogs as the production version
 `;
 
 async function main(): Promise<number> {
@@ -42,6 +44,16 @@ async function main(): Promise<number> {
     return 0;
   }
 
+  if (command === 'prompts' && arg === 'publish') {
+    if (!(await initTracing())) return fail('NEATLOGS_API_KEY is not set');
+    try {
+      console.table(await publishPrompts(process.argv[4] ?? 'Publish checked-in prompts'));
+      return 0;
+    } finally {
+      await shutdownTracing();
+    }
+  }
+
   if (command !== 'investigate' && command !== 'resume') {
     console.log(USAGE);
     return command ? 1 : 0;
@@ -59,7 +71,10 @@ async function main(): Promise<number> {
   } catch (err) {
     return fail(err instanceof Error ? err.message : String(err));
   } finally {
-    await shutdownTracing();
+    const delivery = await shutdownTracing();
+    if (delivery && (!delivery.delivered || delivery.droppedSpans || delivery.failedExports)) {
+      console.error(`neatlogs: trace not fully delivered (dropped ${delivery.droppedSpans}, failed exports ${delivery.failedExports})`);
+    }
   }
 }
 

@@ -3,10 +3,11 @@ import { join } from 'node:path';
 import { z } from 'zod';
 import { createChat, type Chat } from '../llm/client.ts';
 import { runToolLoop, type LoopTool, type ToolCallRecord } from '../llm/loop.ts';
-import { traced } from '../observability/neatlogs.ts';
+import { loadPrompt, type LoadedPrompt } from '../llm/prompts.ts';
+import { guarded, note, traced, type SetAttrs } from '../observability/neatlogs.ts';
 import { Records, type FindingRecord, type FindingStatus } from '../state/records.ts';
-import { fallbackUsage, listSourceFiles } from '../tools/fallbackImpact.ts';
-import { graphCallers, graphEdges, parseEdges, type Caller, type UsageSite } from '../tools/graph.ts';
+import { fallbackUsage } from '../tools/fallbackImpact.ts';
+import { graphCallers, graphEdges, graphSearch, parseEdges, type Caller, type CodeHit, type UsageSite } from '../tools/graph.ts';
 import { resolveInside } from '../tools/paths.ts';
 import { repoDir } from './intake.ts';
 import type { Candidate, IntelSummary } from './intel.ts';
@@ -18,9 +19,10 @@ export interface ImpactProvider {
   /** Raw `entire graph edges` output for the repository. */
   edges(repoDir: string): Promise<string>;
   callers(repoDir: string, symbol: string): Promise<Caller[]>;
+  search(repoDir: string, query: string): Promise<CodeHit[]>;
 }
 
-export const graphProvider: ImpactProvider = { edges: graphEdges, callers: graphCallers };
+export const graphProvider: ImpactProvider = { edges: graphEdges, callers: graphCallers, search: graphSearch };
 
 export interface UsageMap {
   /** Why the code graph was not used, when it was not. */
@@ -49,31 +51,12 @@ export interface ImpactResult {
   toolCalls: ToolCallRecord[];
   turns: number;
   costUsd: number;
+  /** Which prompt the model ran with: the neatlogs version number, or `local`. */
+  promptVersion: string;
 }
 
 const MAX_FILE_LINES = 250;
-const MAX_MATCHES = 40;
 const MAX_SOURCE_CHARS = 24_000;
-
-const SYSTEM = `You are the impact analyst inside Veritas, a tool that checks whether a dependency upgrade breaks a specific JavaScript or TypeScript project.
-
-You are given one package, the upgrade being considered, excerpts from the package's own release notes, and the places in the project that use the package. Decide, for each place, whether the upgrade breaks it.
-
-Rules:
-- Read the code before you judge it. Use read_file on every file that uses the package. Never describe code you have not read.
-- A site is "affected" only when a change documented in the excerpts applies to what that code actually does, or when the package's module format changes in a way the project's module system cannot load as written.
-- A site is "not_affected" when it only uses parts of the package that still work the same way after the upgrade. A file that imports the package is not affected just because it imports it.
-- Use "unsure" when the excerpts do not settle it. Do not guess.
-- Removed or changed APIs are often methods on objects the package creates (for example a method on an app, request or response object). Check method calls, not only the import line.
-- List only changes that the excerpts state. Give the source URL each one came from.
-- Report every file that uses the package, including the ones that are not affected.
-
-Module formats in Node.js:
-- A CommonJS file loads packages with require(). An ES module uses import.
-- When a package becomes ES-module-only: on Node.js 22 and later, require() of it returns the module namespace object, so a default export is found under .default and named exports are properties; code that calls the required value directly, or calls methods that lived on the old default export, fails with "is not a function". On Node.js versions before 22, require() of it throws ERR_REQUIRE_ESM.
-- A deep import such as require('pkg/lib/x') fails when the package's "exports" no longer lists that path.
-
-When you have read the code, call report_impact once.`;
 
 function readFileTool(dir: string): LoopTool {
   return {
@@ -84,8 +67,8 @@ function readFileTool(dir: string): LoopTool {
       properties: { path: { type: 'string', description: 'Path relative to the project root' }, start_line: { type: 'integer', minimum: 1 } },
       required: ['path'],
     },
-    run: (args) => {
-      const path = resolveInside(dir, String(args.path));
+    run: async (args) => {
+      const path = await guarded('workspace_path', String(args.path), () => resolveInside(dir, String(args.path)));
       if (!existsSync(path)) throw new Error(`No such file: ${String(args.path)}`);
       const lines = readFileSync(path, 'utf8').split('\n');
       const start = Math.max(1, Number(args.start_line) || 1);
@@ -96,20 +79,14 @@ function readFileTool(dir: string): LoopTool {
   };
 }
 
-function searchTool(dir: string): LoopTool {
+function searchTool(dir: string, provider: ImpactProvider): LoopTool {
   return {
     name: 'search_code',
-    description: 'Find lines in the project source that contain a piece of text, for example a method name such as ".del(". Plain text, not a regular expression.',
-    parameters: { type: 'object', properties: { text: { type: 'string', minLength: 2 } }, required: ['text'] },
-    run: (args) => {
-      const needle = String(args.text);
-      const matches: string[] = [];
-      for (const file of listSourceFiles(dir)) {
-        readFileSync(join(dir, file), 'utf8').split('\n').forEach((line, i) => {
-          if (line.includes(needle) && matches.length < MAX_MATCHES) matches.push(`${file}:${i + 1}  ${line.trim()}`);
-        });
-      }
-      return matches.length ? matches.join('\n') : 'No matches.';
+    description: 'Search the project with the code graph. Describe what you are looking for, or name a function or method (for example "routes that call req.param" or "app.del"). Returns the best-matching functions with file and line.',
+    parameters: { type: 'object', properties: { query: { type: 'string', minLength: 2 } }, required: ['query'] },
+    run: async (args) => {
+      const hits = await provider.search(dir, String(args.query));
+      return hits.length ? hits.map((h) => `${h.file}:${h.line}${h.symbol ? `  ${h.symbol}` : ''}\n    ${h.snippet}`).join('\n') : 'No matches.';
     },
   };
 }
@@ -175,6 +152,19 @@ async function buildUsageMap(dir: string, packages: string[], provider: ImpactPr
   return map;
 }
 
+/** Runs the impact analyst as a neatlogs AGENT span linked to the managed prompt version it used. */
+async function runImpactAgent<T>(candidate: Candidate, body: (prompt: LoadedPrompt, set: SetAttrs) => Promise<T>): Promise<T> {
+  const prompt = await loadPrompt('veritas-impact-analyst');
+  return traced(
+    'agent.impact',
+    'AGENT',
+    { package: candidate.package, from: candidate.installed, to: candidate.targetVersion ?? '', prompt_version: prompt.version, prompt_source: prompt.source },
+    (set) => body(prompt, set),
+    undefined,
+    { promptTemplate: prompt.text, version: `${prompt.name}@${prompt.version}` },
+  );
+}
+
 const uniqueSites = (sites: { file: string; line: number | null; symbol: string | null; provider: string }[]) =>
   [...new Map(sites.map((s) => [`${s.file}:${s.line ?? ''}:${s.symbol ?? ''}`, s])).values()];
 
@@ -220,14 +210,14 @@ export function createImpactHandler(deps: { chat?: Chat; provider?: ImpactProvid
 
       const sources = records.sourcesFor(finding.id);
       const result = await ctx.step('impact_reasoning', { finding: finding.id, package: candidate.package, from: candidate.installed, to: candidate.targetVersion }, () =>
-        traced('agent.impact', 'AGENT', { package: candidate.package, from: candidate.installed, to: candidate.targetVersion ?? '' }, async (set): Promise<ImpactResult> => {
+        runImpactAgent(candidate, async (prompt, set): Promise<ImpactResult> => {
           const chat = deps.chat ?? createChat(ctx.db, ctx.limits);
           const loop = await runToolLoop<ImpactReport>({
             chat,
             ctx: { investigationId: ctx.investigationId, state: 'IMPACT', step: `impact_reasoning:${candidate.package}` },
-            system: SYSTEM,
+            system: prompt.text,
             user: userPrompt(dir, candidate, sources, sites),
-            tools: [readFileTool(dir), searchTool(dir), callersTool(dir, provider)],
+            tools: [readFileTool(dir), searchTool(dir, provider), callersTool(dir, provider)],
             submit: {
               name: 'report_impact',
               description: 'Submit the final impact assessment for this package upgrade.',
@@ -241,8 +231,10 @@ export function createImpactHandler(deps: { chat?: Chat; provider?: ImpactProvid
             },
             maxToolCalls: ctx.limits.maxToolCallsPerStep,
           });
-          set({ tool_calls: loop.toolCalls.length, turns: loop.turns, cost_usd: loop.costUsd, affected_sites: loop.result.sites.filter((s) => s.verdict === 'affected').length });
-          return { report: loop.result, toolCalls: loop.toolCalls, turns: loop.turns, costUsd: loop.costUsd };
+          const affectedCount = loop.result.sites.filter((s) => s.verdict === 'affected').length;
+          set({ tool_calls: loop.toolCalls.length, turns: loop.turns, cost_usd: loop.costUsd, affected_sites: affectedCount });
+          note('impact of {package}: {affected} affected site(s). {summary}', { package: candidate.package, affected: affectedCount, summary: loop.result.summary });
+          return { report: loop.result, toolCalls: loop.toolCalls, turns: loop.turns, costUsd: loop.costUsd, promptVersion: prompt.version };
         }),
       );
 

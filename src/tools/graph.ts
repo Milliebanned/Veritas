@@ -17,6 +17,13 @@ export interface Caller {
   line: number | null;
 }
 
+export interface CodeHit {
+  file: string;
+  line: number;
+  symbol: string | null;
+  snippet: string;
+}
+
 interface Relation {
   record_type?: string;
   type?: string;
@@ -94,3 +101,13 @@ export async function graphCallers(repoDir: string, symbol: string, timeoutMs = 
 /** The graph's own blast-radius report for a symbol. Human-readable text, kept as evidence. */
 export const graphImpactText = (repoDir: string, symbol: string, timeoutMs = 60_000) =>
   entireGraph(repoDir, ['impact', '--repo', '.', '--symbol', symbol], timeoutMs);
+
+/** Ranked code search from the graph: plain-language or symbol queries, answered locally. */
+export async function graphSearch(repoDir: string, query: string, timeoutMs = 60_000): Promise<CodeHit[]> {
+  const out = await entireGraph(repoDir, ['search', '--repo', '.', '--profile', 'full', '--query', query], timeoutMs);
+  const parsed = JSON.parse(out) as { results?: { file_path?: string; start_line?: number; symbol_name?: string; snippet?: string; language?: string }[] };
+  return (parsed.results ?? [])
+    .filter((r) => r.file_path && r.language !== 'JSON')
+    .slice(0, 12)
+    .map((r) => ({ file: r.file_path!, line: r.start_line ?? 1, symbol: r.symbol_name ?? null, snippet: (r.snippet ?? '').trim().slice(0, 300) }));
+}

@@ -203,7 +203,7 @@ describe('impact state', () => {
     fetchReleaseNotes: async () => [{ version: '4.0.0', url: 'https://github.com/markedjs/marked/releases/tag/v4.0.0', kind: 'release_notes', excerpt: 'Default export removed.', publishedAt: null }],
     fetchAdvisories: async () => [],
   };
-  const provider: ImpactProvider = { edges: async () => fixtureText('graph-edges-marked.ndjson'), callers: async () => [{ symbol: 'caller', file: 'src/x.js', line: 3 }] };
+  const provider: ImpactProvider = { edges: async () => fixtureText('graph-edges-marked.ndjson'), callers: async () => [{ symbol: 'caller', file: 'src/x.js', line: 3 }], search: async () => [{ file: 'src/render.js', line: 3, symbol: 'renderNote', snippet: 'function renderNote(source) {' }] };
   const report = (sites: { file: string; verdict: string }[]) => ({
     changed_apis: [{ api: 'default export', change: 'removed', source_url: 'https://github.com/markedjs/marked/releases/tag/v4.0.0' }],
     sites: sites.map((s) => ({ ...s, line: 1, api: 'marked()', reason: 'because' })),
@@ -269,7 +269,7 @@ describe('impact state', () => {
   it('falls back to the source scan when the code graph is unavailable', async () => {
     const seen: ChatRequest[] = [];
     const chat = scriptedChat([[{ name: 'report_impact', args: report([{ file: 'src/render.js', verdict: 'affected' }]) }]], seen);
-    const broken: ImpactProvider = { edges: async () => { throw new Error('entire graph edges failed: spawn entire ENOENT'); }, callers: async () => [] };
+    const broken: ImpactProvider = { edges: async () => { throw new Error('entire graph edges failed: spawn entire ENOENT'); }, callers: async () => [], search: async () => [] };
     const { inv, records, journal } = await run(chat, broken);
 
     expect(journal.output<{ graphError: string }>(inv.id, 'IMPACT', 'usage_map')?.graphError).toContain('ENOENT');
