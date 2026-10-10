@@ -62,9 +62,19 @@ Still to check by hand: whether Entire checkpoints open in a logged-out browser,
 - Tests that ran: `node bench/reproduce.mjs` — 8 of 8 cases valid on Node v24.20.0. For the five breaking cases the project's tests pass on the old version, fail after the bump with a real error, and pass again with the reference fix. Results in `evidence/bench/reproduction.json` and `bench/README.md`. `npx vitest run` 6 passed; `npx tsc --noEmit` clean.
 - Each breaking change was read from the package's own release notes; the URL and quote are in the case file.
 - The first control case used uuid 3.4.0, which turned out to have a published advisory, so it was rebuilt on express 4.22.3 (no advisory) to keep it a clean control.
+- Milestone 3: the first three agent states are real. INTAKE copies or clones the repository into a private workspace with a baseline commit. INVENTORY reads `package.json` and `package-lock.json` and runs `npm audit` against the lockfile. INTEL looks up each direct dependency in the npm registry, fetches release notes for every major version crossed (GitHub release, else the changelog section, plus a linked migration guide), fetches published advisories from the GitHub Advisory Database, and records candidate findings with their sources. No model is used yet.
+- Tests that ran: `npx vitest run` — 34 passed, 0 failed (parsers against real recorded responses, retry and token fallback, the three states with recorded tools, a source that cannot be reached, resume without repeated lookups). `npx tsc --noEmit` clean.
+- Ran for real on all 8 benchmark repositories: 10 candidate findings with 46 sources, every source read from its URL. The control with only an outdated package produced no finding. Summary in `evidence/m3/inventory-and-sources.json`.
+
+Found in Milestone 3:
+- The express 5.0.0 release notes do not list the removed methods; they link to a migration guide. INTEL now follows such links, so the removed APIs (`app.del`, `req.param`, `res.json(obj, status)`) are in the recorded source.
+- A GitHub advisory can list several version ranges for one package, each with its own fix. The first version of the parser took the first range and reported the wrong fixed version for uuid 3.4.0 (12.0.1, correct is 11.1.1). It now uses the range that contains the installed version, with a test.
+- uuid has no GitHub release for 7.0.0 and 8.0.0; those notes come from its `CHANGELOG.md`.
+- One lodash advisory in the database was withdrawn in 2021 and is ignored.
 
 Changed from the plan:
 - State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.
+- The inventory is read from the lockfile directly; `npm outdated` and `npm ls` are not used, so nothing has to be installed to list dependencies.
 
 ## Demo
 
@@ -72,8 +82,9 @@ Not built yet.
 
 ## Known limitations and next steps
 
-- Every agent state is still a stub; no dependency analysis happens yet.
-- Next: Milestone 3 (inventory and intelligence tools).
+- INTAKE, INVENTORY and INTEL are real; the other states are still stubs. Findings are candidates (`potential`) until impact analysis exists.
+- Only direct dependencies are checked for breaking changes; advisories cover the whole installed tree.
+- Next: Milestone 4 (impact analysis with entire-graph, and prioritisation).
 
 ## Submission
 
