@@ -1,0 +1,9 @@
+$ entire repo view /gh/Milliebanned/Veritas
+Name:
+  /gh/Milliebanned/Veritas
+Visibility:
+  Public
+
+CLUSTER                     CLONE URL                                                    STATUS
+aws-eu-central-1.entire.io  entire://aws-eu-central-1.entire.io/gh/Milliebanned/Veritas  ready
+aws-us-east-2.entire.io     entire://aws-us-east-2.entire.io/gh/Milliebanned/Veritas     ready

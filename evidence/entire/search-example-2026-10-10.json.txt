@@ -1,0 +1,73 @@
+$ entire search "why does the edit tool accept indentation differences" --json --compact
+{
+  "results": [
+    {
+      "id": "875d8ccacf7482ce91567795701035c521253f76",
+      "type": "commit",
+      "repo": "Milliebanned/Veritas",
+      "branch": "main",
+      "author": "neatlogs[bot]",
+      "date": "2026-10-10T20:53:09.000Z",
+      "title": "Accept edits that differ only in leading indentation",
+      "score": 50.87168934621709,
+      "matchType": "both"
+    },
+    {
+      "id": "8d663a25344e4e622957d0a3ed161a930d598e8a",
+      "type": "commit",
+      "repo": "Milliebanned/Veritas",
+      "branch": "main",
+      "author": "semrushgang",
+      "date": "2026-10-10T21:02:34.000Z",
+      "title": "Show file lines as '<line>| <text>' so indentation is unambiguous to the model",
+      "score": 14.527186406122386,
+      "matchType": "both"
+    },
+    {
+      "id": "dd505a82d6d66a9b637476f5f8cb9b77dab3d5fe",
+      "type": "commit",
+      "repo": "Milliebanned/Veritas",
+      "branch": "main",
+      "author": "semrushgang",
+      "date": "2026-10-10T21:02:31.000Z",
+      "title": "Fix strict type errors in the indentation fallback and add tests for it",
+      "score": 14.905731424215634,
+      "matchType": "both"
+    },
+    {
+      "id": "5654500ca9b7b06c549f02dca74d3715a9981cde",
+      "type": "commit",
+      "repo": "Milliebanned/Veritas",
+      "branch": "m5-repair",
+      "author": "semrushgang",
+      "date": "2026-10-10T17:49:25.000Z",
+      "title": "Add sandbox, test runner, restricted edit tool and Entire verify/explain/diff wrappers",
+      "score": 26.834341351379436,
+      "matchType": "both"
+    },
+    {
+      "id": "4836bf52-cf6c-452b-98b0-b0deb7acb0c9",
+      "type": "session",
+      "repo": "Milliebanned/Veritas",
+      "branch": "m5-repair",
+      "author": "semrushgang",
+      "date": "2026-10-10T17:49:28.180Z",
+      "title": "VERITAS Milestone Verification and Repair Implementation",
+      "score": 26.834341351760333,
+      "snippet": "[user]: i have restarted the vs code, check the plugin now [assistant]: The plugin is working on your machine. Whether its data shows up in neatlogs I can't confirm, because neatlogs' platform has got…",
+      "matchType": "both"
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "total_pages": 1,
+  "limit": 10,
+  "counts": {
+    "repos": 0,
+    "checkpoints": 0,
+    "commits": 4,
+    "prs": 0,
+    "sessions": 1
+  },
+  "reranked": true
+}

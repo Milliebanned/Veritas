@@ -102,6 +102,8 @@ Still to check by hand: whether Entire checkpoints open in a logged-out browser,
   One case, one run each side; the full benchmark comparison is still to come.
 - Limits met in neatlogs: the neat AI chat ran out of length twice while trying to rewrite larger files for a pull request, and succeeded when the change was limited to one 48-line file. neatlogs shows $0 cost on the agent's traces although tokens are correct. The project still reports tier `free` and an empty repository field through the MCP server, although GitHub and Claude Code are connected in the UI.
 - Tests that ran: `npx vitest run` — 69 passed. `npx tsc --noEmit` clean.
+- Entire check at the end of the day: 32 of 37 commits carry a checkpoint and all are pushed (the others are the first two commits and GitHub's merge commits). The repository is now mirrored in Entire on two clusters with public visibility, after the Entire account was linked to GitHub; `entire search` returns results from the repository's history and `entire recap` shows 32 sessions and 32 checkpoints. Outputs in `evidence/entire/`.
+- Entire's graph in the build itself is still weak: `entire graph stats` reports 15 graph calls against 178 search-and-read calls, a graph-first rate of 0%, and only 3 of those graph calls came after the earlier promise to use it first. This has to change in the next milestone and will be measured again.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
