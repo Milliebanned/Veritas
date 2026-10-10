@@ -1,0 +1,48 @@
+{
+  "provider": "entire-graph",
+  "schema_version": "1.1",
+  "javascript_semantic": true,
+  "typescript_semantic": true,
+  "javascript_relations": [
+    "ASYNC_CALLS",
+    "CALLS",
+    "CONSTRUCTS",
+    "CONTAINS",
+    "DATA_FLOWS",
+    "DEFINES",
+    "EXTENDS",
+    "HANDLES_GRAPHQL",
+    "HANDLES_TRPC",
+    "IMPORTS",
+    "INHERITS"
+  ],
+  "typescript_relations": [
+    "ACCESSES",
+    "ASYNC_CALLS",
+    "CALLS",
+    "CONSTRUCTS",
+    "CONTAINS",
+    "DATA_FLOWS",
+    "DEFINES",
+    "EXTENDS",
+    "HANDLES_GRAPHQL",
+    "HANDLES_TRPC",
+    "IMPLEMENTS",
+    "IMPORTS",
+    "INHERITS",
+    "OVERRIDES",
+    "PARAM_TYPE",
+    "READS_FIELD",
+    "RETURNS_TYPE",
+    "USES_TYPE",
+    "WRITES_FIELD"
+  ],
+  "features_requiring_network_access": {
+    "grammar_download": false,
+    "hosted_models": false,
+    "network_discovery": false,
+    "remote_code_fetch": false,
+    "remote_embeddings": false,
+    "telemetry_upload": false
+  }
+}
