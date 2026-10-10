@@ -1,0 +1,28 @@
+$ entire tokens profile
+Token profile
+
+Source:               committed_checkpoints
+Checkpoints available: 17
+Checkpoints analyzed: 17
+With token data:      14
+Missing token data:   3
+
+Checkpoint-observed token usage
+Total:  62929k tokens
+  Input: 940 | Cache read: 59977.9k | Cache write: 2210.3k | Output: 739.9k | API calls: 394
+
+Repeated signals
+- Cache/context replay hotspot: 14 checkpoints (82%)
+- API call amplification: 6 checkpoints (35%)
+- Missing token data: 3 checkpoints (18%)
+
+Recommendations
+- Use `entire search` for prior decisions/checkpoints before broad re-investigation.
+- Batch diagnostic reads around one narrowed hypothesis when API call amplification repeats.
+- Summarize useful findings before continuing large-context work; compact or restart only after preserving relevant context.
+- Increase token coverage by using agents and checkpoints that report token usage.
+
+Limitations
+- 3 checkpoints did not include token usage.
+- Token totals are summed from analyzed checkpoints and may include overlapping checkpoint history; treat them as checkpoint-observed volume, not guaranteed unique session spend.
+- Tool-level search/read spend is not captured yet; this profile infers patterns from token totals, cache/context replay, API call counts, and subagent totals.

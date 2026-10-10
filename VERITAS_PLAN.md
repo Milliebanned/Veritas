@@ -265,10 +265,23 @@ Docs: https://docs.neatlogs.com/sdk/typescript and https://docs.neatlogs.com/doc
 - **Attributes:** investigation id, state, finding, attempt number, outcome, via `activeSpan.setAttribute` [Verified method; attribute names are our own].
 - **Errors and retries:** `span()` captures errors [Verified]. Each retry is its own span with an `attempt` attribute. No dedicated retry API is assumed.
 
+**Rule adopted on Oct 10:** anything neatlogs, Entire or cfo.ai can genuinely do is done with them, checked against their docs or CLI first, before any other tool or hand-written code is used.
+
+**neatlogs features in use** (each checked against the SDK, the docs or the live MCP server):
+- Sessions: one session per investigation, so a resumed run is a second trace in the same session.
+- Tags and metadata on every span: `release:<git commit or VERITAS_RELEASE>` and `tier:<fast|main>`, for comparing versions.
+- Span kinds as neatlogs defines them: WORKFLOW (investigation), CHAIN (states, steps), AGENT (impact analyst), TOOL with `neatlogs.tool.name`, LLM (from `wrapOpenAI`), GUARDRAIL with `neatlogs.guardrail.passed` for the workspace path check and for validation of the model's submission.
+- Logs (`log()`): state changes, step reuse and re-runs, HTTP retries, rejected submissions, failures, and the agent's own summary.
+- Managed prompts: the agent's prompts live in neatlogs with versions and a `production` label (`veritas prompts publish`). The agent loads the labelled version at run time and each LLM span is linked to the prompt version it used. The checked-in copy is the fallback.
+- Trace output (`setTraceOutput`): the investigation's result.
+- MCP server: the coding agent reads traces, detections and fix suggestions directly (`.mcp.json`).
+- SDK Doctor (`neatlogs doctor`), delivery diagnostics on every run, and a local copy of every span in `.veritas/spans/`.
+- Planned as soon as traces finalize on the platform: Detections (previewed against real traces, as the tool requires), Investigate, and Fixes for the improvement loop below.
+
 **The improvement story (25% + evidence item "the agent improved"):**
 1. Run the benchmark at tag `v0-baseline`. Save trace links and screenshots.
-2. Read the traces for the worst case and identify one concrete problem (for example repeated tool calls, a wasted retry, oversized context). The problem must be whatever the traces actually show.
-3. Change the agent. Run the same benchmark at tag `v1-improved`.
+2. Let neatlogs find the problem: Detections flag the bad runs, Investigate (Neat AI) works out the cause, and Fixes proposes the change. The problem must be whatever the traces actually show.
+3. Apply the suggested change (a new prompt version in neatlogs where the fix is a prompt change). Run the same benchmark at tag `v1-improved`.
 4. Record both in `evidence/bench/` and `evidence/neatlogs/` with the compared numbers.
 
 [Verified in M0] A trace link opened outside our account asks for a login, so judges cannot follow links. Evidence is screenshots in `evidence/neatlogs/`, which the rules accept.

@@ -1,0 +1,46 @@
+$ entire graph impact --repo . --symbol traced
+# Asked during the build to see what depends on the tracing wrapper.
+Completeness: no parse failures in TypeScript (30 files parsed); 1 elsewhere (SQL 1) cannot affect this answer — see --format json.
+Impact: traced (src/observability/neatlogs.ts:77) def=77 span=77-98 [function]
+Blast radius: 17 callers (9 direct, 8 transitive), 1 callee, 8 type consumers, 6 data flows, 3 co-change files, 1 sibling.
+Callers (9 direct, 8 transitive; who breaks if behavior changes):
+- runImpactAgent (src/agent/impact.ts:158, def :156)
+- createImpactHandler (src/agent/impact.ts:182, def :171)
+- intake (src/agent/intake.ts:45, def :43)
+- tool (src/agent/intel.ts:48, def :47)
+- Orchestrator.run (src/agent/orchestrator.ts:45, def :37)
+- Orchestrator.runState (src/agent/orchestrator.ts:79) [ASYNC_CALLS]
+- createChat (src/llm/client.ts:93, def :66)
+- runToolLoop (src/llm/loop.ts:63) [ASYNC_CALLS]
+- httpGet (src/tools/http.ts:35) [ASYNC_CALLS]
+- createHandlers (src/agent/handlers.ts:39, def :33) [via createImpactHandler]
+- createInventoryHandler (src/agent/intel.ts:58, def :52) [+1 more call site, via tool]
+- lookup (src/agent/intel.ts:144, def :142) [via tool]
+- main (src/cli.ts:68, def :22) [via Orchestrator.run]
+- impact.test.ts (tests/impact.test.ts) [via runToolLoop]
+- run (tests/impact.test.ts:213) [+1 more call site, via Orchestrator.run]
+- ... +2 more (use --format json for the full list)
+Callees (1; what it depends on):
+- neatlogs.trace
+Type consumers (0 in, 8 out; USES_TYPE/PARAM_TYPE/RETURNS_TYPE):
+- -> Kind (src/observability/neatlogs.ts:6) [PARAM_TYPE]
+- -> Kind (src/observability/neatlogs.ts:6) [USES_TYPE]
+- -> Attrs (src/observability/neatlogs.ts:7) [PARAM_TYPE]
+- -> Attrs (src/observability/neatlogs.ts:7) [USES_TYPE]
+- -> SpanExtras (src/observability/neatlogs.ts:10) [PARAM_TYPE]
+- -> SpanExtras (src/observability/neatlogs.ts:10) [USES_TYPE]
+- -> SetAttrs (src/observability/neatlogs.ts:70) [PARAM_TYPE]
+- -> SetAttrs (src/observability/neatlogs.ts:70) [USES_TYPE]
+Data flows (1 in, 5 out):
+- -> runImpactAgent (src/agent/impact.ts:156)
+- <- tool (src/agent/intel.ts:47)
+- -> Orchestrator.run (src/agent/orchestrator.ts:37)
+- -> Orchestrator.runState (src/agent/orchestrator.ts:79)
+- -> createChat (src/llm/client.ts:66)
+- -> set (src/observability/neatlogs.ts:88)
+Co-change coupling (3; files that historically change with src/observability/neatlogs.ts):
+- src/agent/orchestrator.ts [files changed together in 2 recent commits]
+- src/llm/client.ts [files changed together in 2 recent commits]
+- src/llm/loop.ts [files changed together in 2 recent commits]
+Same-container siblings (1):
+- set (src/observability/neatlogs.ts:88) [member]

@@ -1,0 +1,101 @@
+{
+  "format_version": "neatlogs.doctor/v2",
+  "mode": "probe",
+  "status": "fail",
+  "first_failure": "TRACE_READBACK_TIMEOUT",
+  "runtime": {
+    "language": "typescript",
+    "sdk_version": "1.1.28",
+    "schema_version": "2",
+    "transport": "otlp_http_protobuf"
+  },
+  "capture": {
+    "trace_id": "a9d2095f094e75603652ed2d80a0e97f",
+    "root_span_id": "16a2b9e3109aa16a",
+    "span_count": 4,
+    "semantic_digest": "sha256:7163d2de42c4165f3ae552279fdde2ec0839413ce608c6e5d71f3fb532df319b"
+  },
+  "sampling": {
+    "effective_sampler": "parentbased_traceidratio",
+    "root_sample_rate": 1,
+    "sampled": true
+  },
+  "ownership": {
+    "provider": "private",
+    "instrumentor_count": 0
+  },
+  "queue": {
+    "mode": "batch",
+    "pending_spans": 0,
+    "dropped_spans": 0,
+    "capacity": 2048
+  },
+  "retry": {
+    "attempts": 0,
+    "window_ms": 0,
+    "exhausted": false
+  },
+  "flush": {
+    "outcome": "success",
+    "timeout_ms": 5000,
+    "duration_ms": 2081
+  },
+  "checks": [
+    {
+      "name": "local_envelope",
+      "status": "pass",
+      "reason_code": "LOCAL_ENVELOPE_VALID",
+      "remediation_code": "NONE",
+      "message": "The final normalized local envelope is valid"
+    },
+    {
+      "name": "controlled_fixture_spans",
+      "status": "pass",
+      "reason_code": "CONTROLLED_SPANS_VALID",
+      "remediation_code": "NONE",
+      "message": "Doctor captured exactly the four expected semantic spans"
+    },
+    {
+      "name": "controlled_fixture_hierarchy",
+      "status": "pass",
+      "reason_code": "CONTROLLED_HIERARCHY_VALID",
+      "remediation_code": "NONE",
+      "message": "Doctor captured the exact root-agent-LLM and root-tool edges"
+    },
+    {
+      "name": "controlled_fixture_io",
+      "status": "pass",
+      "reason_code": "CONTROLLED_IO_VALID",
+      "remediation_code": "NONE",
+      "message": "Doctor captured the deterministic non-null input and output values"
+    },
+    {
+      "name": "controlled_fixture_metadata",
+      "status": "pass",
+      "reason_code": "CONTROLLED_METADATA_VALID",
+      "remediation_code": "NONE",
+      "message": "Doctor captured all versioned metadata on every semantic span"
+    },
+    {
+      "name": "controlled_fixture_tokens",
+      "status": "pass",
+      "reason_code": "CONTROLLED_TOKENS_VALID",
+      "remediation_code": "NONE",
+      "message": "Doctor captured the exact numeric token values"
+    },
+    {
+      "name": "controlled_fixture_bounds",
+      "status": "pass",
+      "reason_code": "CONTROLLED_BOUNDS_VALID",
+      "remediation_code": "NONE",
+      "message": "Doctor stayed inside the bounded capture budget"
+    },
+    {
+      "name": "probe_transport",
+      "status": "fail",
+      "reason_code": "TRACE_READBACK_TIMEOUT",
+      "remediation_code": "WAIT_FOR_TRACE",
+      "message": "Timed out waiting for the exact Doctor trace"
+    }
+  ]
+}

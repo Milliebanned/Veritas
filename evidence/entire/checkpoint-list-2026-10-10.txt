@@ -1,0 +1,58 @@
+$ entire checkpoint list
+  branch       main
+  checkpoints  18
+
+● 4836bf52-cf6  [temporary]  "draft the post with media that correspond that i can use...."
+  10-10 08:47 (4060fbe) Draft the post with media that correspond that i can use. also analyse f
+
+● 01M4K7NXKDGEFSSXB0M747CE18  "also, when do we get to use aws"
+  10-10 08:42 (63ba917) Trace span inputs, state transitions, per-call cost and each HTTP retry
+
+● 01M4K746TW4EBCS6XFPYT84636  Record Milestone 4 results: 8 of 8 verdicts, affected fil...
+  10-10 08:32 (c42df80) Record Milestone 4 results: 8 of 8 verdicts, affected files 11 of 11
+
+● 01M4K745Q53PWKM6STY7170DA3  "okay commit and move to the next step"
+  10-10 08:32 (0341368) Implement IMPACT with entire-graph usage map and model reasoning, and PRIORITIZE
+
+● 01M4K742WV852DGRP35WWS9RQH  "okay commit and move to the next step"
+  10-10 08:32 (02bc3d6) Add model client with cost recording, bounded tool loop and workspace path ch...
+
+● 01M4K6F54V6X42TQ6MC0WBTM9M  Record Milestone 3 results for all eight benchmark reposi...
+  10-10 08:21 (3e4a955) Record Milestone 3 results for all eight benchmark repositories
+
+● 01M4K6F44QMNBPYJCH94S0YY2V  "move to the next milestone"
+  10-10 08:21 (4e36054) Implement INTAKE, INVENTORY and INTEL states with candidate findings and sources
+
+● 01M4K6F2SKGVM097B2AH3293JT  "move to the next milestone"
+  10-10 08:21 (4c6d23b) Add registry, release note, advisory and lockfile tools with recorded fixtures
+
+● 01M4K101NF79ZCQQ6ETG02R84C  Record Milestone 2 results in the plan and build log
+  10-10 06:45 (d7050c0) Record Milestone 2 results in the plan and build log
+
+● 01M4K0ZZ1BW0XQMEWN5VN5FHGP  "i am in, where to go cance"
+  10-10 06:45 (1e16228) Add eight benchmark cases with ground truth and a reproduction check
+
+● 01M4JZF1HYCXVH9BH2N2K69S4K  "ALSO, IS ENTIRE now working or what?"
+  10-10 06:19 (dde99ed) Record that trace links need a login; add first trace screenshots
+
+● 01M4JZ5G46S9C3YMJ3HXPBAP7X  "THIS?"
+  10-10 06:13 (5a4f536) Record cost source: LiteLLM response headers
+
+● 01M4JYQG1NXJFYGRR5BJ8X23JE  "omg, i dont understand shii"
+  10-10 06:06 (0760139) Record working GitHub token check
+
+● 01M4JY4QBPCCJV4NX0AC5XEQTR  "Continue from VERITAS_PLAN.md, Milestone 0."
+  10-10 05:55 (1e4b94a) Record Milestone 0 verification results and update plan labels
+
+● 01M4JY0K3FG9RZ0VJX203M17J5  "where can i get api key here?"
+  10-10 05:53 (f2cc02c) Update build log for Milestone 1
+
+● 01M4JY03VFHQVBNHG8XYTQJG5G  "where can i get api key here?"
+  10-10 05:53 (6123a50) Add orchestrator state machine, tracing wrapper, CLI and resume tests
+
+● 01M4JY017KR2P633HPZQB50JX4  "where can i get api key here?"
+  10-10 05:53 (fbe9f63) Add project setup and SQLite state store with step journal
+
+● 01M4JXMJ3GJZB1DA7CRRM882FB  "where can i get api key here?"
+  10-10 05:47 (688b89f) Record Milestone 0 smoke test results
+
