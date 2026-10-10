@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K6F2SKGVM097B2AH3293JT",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "package-lock.json",
+    "package.json",
+    "src/tools/advisories.ts",
+    "src/tools/githubReleases.ts",
+    "src/tools/http.ts",
+    "src/tools/manifest.ts",
+    "src/tools/npmCli.ts",
+    "src/tools/npmRegistry.ts",
+    "tests/fixtures/advisories-lodash.json",
+    "tests/fixtures/audit-clean.json",
+    "tests/fixtures/audit-lodash.json",
+    "tests/fixtures/packument-chalk.json",
+    "tests/fixtures/packument-request.json",
+    "tests/fixtures/releases-chalk.json",
+    "tests/tools.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 291754,
+    "cache_read_tokens": 3872510,
+    "output_tokens": 51554,
+    "api_call_count": 19
+  }
+}
