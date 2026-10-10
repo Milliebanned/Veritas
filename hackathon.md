@@ -55,7 +55,9 @@ Found in Milestone 0 verification:
 
 - neatlogs shows token counts but no cost for the LiteLLM models. The LiteLLM endpoint returns the cost of each call in the `x-litellm-response-cost` header and the key's total spend in `x-litellm-key-spend`; the agent will record both.
 
-Still to check by hand: whether trace links and Entire checkpoints open in a logged-out browser, and whether cfo.ai accepts typed assumptions.
+- neatlogs trace links ask for a login when opened outside the account, so trace evidence is kept as screenshots in `evidence/neatlogs/`. The first two are saved: the smoke test trace and the Milestone 1 stub investigation trace.
+
+Still to check by hand: whether Entire checkpoints open in a logged-out browser, and whether cfo.ai accepts typed assumptions.
 
 Changed from the plan:
 - State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.

@@ -271,7 +271,7 @@ Docs: https://docs.neatlogs.com/sdk/typescript and https://docs.neatlogs.com/doc
 3. Change the agent. Run the same benchmark at tag `v1-improved`.
 4. Record both in `evidence/bench/` and `evidence/neatlogs/` with the compared numbers.
 
-[To verify: whether a trace link is viewable by people outside our account. Screenshots are accepted either way.]
+[Verified in M0] A trace link opened outside our account asks for a login, so judges cannot follow links. Evidence is screenshots in `evidence/neatlogs/`, which the rules accept.
 
 ## 17. Entire integration plan
 
