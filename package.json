@@ -1,0 +1,28 @@
+{
+  "name": "veritas",
+  "version": "0.1.0",
+  "description": "Autonomous dependency intelligence and remediation agent. Verified changes. Reliable software.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "bin": {
+    "veritas": "./src/cli.ts"
+  },
+  "scripts": {
+    "veritas": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "neatlogs": "^1.1.28",
+    "openai": "^7.32.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
