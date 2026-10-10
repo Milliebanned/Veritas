@@ -9,7 +9,8 @@ export interface DependencyRecord {
   deprecated: string | null;
 }
 
-export type FindingKind = 'breaking' | 'advisory' | 'deprecation';
+/** `unchecked` records a package Veritas could not examine, so a failed lookup is never reported as "nothing found". */
+export type FindingKind = 'breaking' | 'advisory' | 'deprecation' | 'unchecked';
 export type FindingStatus = 'confirmed' | 'potential' | 'unresolved' | 'not_affected';
 
 export interface FindingInput {

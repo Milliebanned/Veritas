@@ -38,9 +38,7 @@ const db = openDb();
 const journal = new Journal(db);
 const records = new Records(db);
 const sandbox = selectSandbox();
-const results = [];
-
-for (const id of ids) {
+async function runCase(id: string) {
   const spec = parse(readFileSync(join(casesDir, id, 'case.yaml'), 'utf8')) as CaseSpec;
   const orchestrator = new Orchestrator({ db, handlers });
   const started = Date.now();
@@ -55,7 +53,8 @@ for (const id of ids) {
 
   const findings = records.findings(inv.id).filter((f) => f.package === spec.package);
   const main = findings.find((f) => f.kind === (spec.expected.finding_kind === 'none' ? 'breaking' : spec.expected.finding_kind));
-  const verdict = !main ? 'no_finding' : main.status === 'not_affected' ? 'not_affected' : 'affected';
+  // A package the agent could not examine is its own outcome: wrong for scoring, but not a claim that nothing is there.
+  const verdict = findings.some((f) => f.kind === 'unchecked') ? 'unchecked' : !main ? 'no_finding' : main.status === 'not_affected' ? 'not_affected' : 'affected';
   const reported = [...new Set(records.affectedSites(inv.id).filter((s) => s.finding_id === main?.id).map((s) => s.file))].sort();
   const expected = [...spec.expected.affected_files].sort();
   const repair = records.repairs(inv.id).find((r) => r.package === spec.package);
@@ -99,10 +98,13 @@ for (const id of ids) {
     tokens: usage.promptTokens + usage.completionTokens,
     cost_usd: Number(usage.costUsd.toFixed(4)),
   };
-  results.push(result);
   const fix = result.repaired === null ? '-' : result.repaired ? `fixed in ${repair?.attempts} attempt(s)` : `NOT fixed (${repair?.status ?? 'no repair'}, acceptance ${acceptance})`;
   console.log(`${result.verdict_correct ? 'ok ' : 'BAD'} ${id.padEnd(26)} ${verdict.padEnd(12)} files ${result.files_true_positive}/${reported.length} of ${expected.length}  ${fix.padEnd(44)} ${(durationMs / 1000).toFixed(0)}s  $${result.cost_usd}${crashed ? `  CRASHED: ${crashed}` : ''}`);
+  return result;
 }
+
+const results: Awaited<ReturnType<typeof runCase>>[] = [];
+for (const id of ids) results.push(await runCase(id));
 
 const sum = (pick: (r: (typeof results)[number]) => number) => results.reduce((a, r) => a + pick(r), 0);
 const fixable = results.filter((r) => r.fixable);

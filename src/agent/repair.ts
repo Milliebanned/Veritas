@@ -148,7 +148,7 @@ export function createRepairHandlers(deps: RepairDeps = {}): Record<'PLAN_REPAIR
           const forPackage = candidates.filter((c) => c.package === pkg);
           // The latest version when a breaking change is in play (it also clears advisories); otherwise the first fully patched one.
           const target = forPackage.find((c) => c.kind === 'breaking')?.targetVersion ?? forPackage.find((c) => c.kind === 'advisory')?.targetVersion ?? null;
-          const repairable = group.filter((f) => f.kind !== 'deprecation');
+          const repairable = group.filter((f) => f.kind === 'breaking' || f.kind === 'advisory');
           return { package: pkg, from: forPackage[0]?.installed ?? '', target, findings: repairable, priority: Math.max(0, ...group.map((f) => f.priority ?? 0)) };
         })
         .sort((a, b) => b.priority - a.priority);
