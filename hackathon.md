@@ -31,8 +31,16 @@ Completed:
 - Enabled Entire in the repo with commit linking set to always, and added the entire-graph agent instructions.
 - Confirmed entire-graph supports JavaScript and TypeScript semantically (imports and calls) and needs no network. Output saved in `evidence/entire/graph-capabilities-js-ts.json`.
 
+- Smoke test passed (run outside the repo): `neatlogs` 1.1.28 with `wrapOpenAI` on an `openai` 7.32.0 client pointed at the LiteLLM endpoint. The trace `veritas-smoke` showed a WORKFLOW span, a TOOL span and an LLM span for `claude-haiku` with token counts. Manual model-call tracing is not needed.
+
+Findings to act on:
+- The workflow span showed as "anonymous". Give every `span()` an explicit name.
+- The trace showed tokens but no cost. Check whether neatlogs prices the LiteLLM model names; if not, compute cost from tokens ourselves.
+- No Docker and no Homebrew on the dev machine; Node is v24. Use `VERITAS_SANDBOX=local` for development and confirm each benchmark case reproduces on the Node version in use.
+- The first two commits have no Entire checkpoint because the hooks were installed mid-session. Checkpoints start with the next coding session.
+
 Pending:
-- neatlogs smoke test through the LiteLLM endpoint (needs API keys in `.env`).
+- `entire login`.
 - First Entire checkpoint.
 - Public GitHub repository.
 
