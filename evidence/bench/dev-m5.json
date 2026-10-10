@@ -1,0 +1,462 @@
+{
+  "summary": {
+    "tag": "dev-m5",
+    "ran_at": "2026-10-10T17:52:53.042Z",
+    "model": "claude-haiku",
+    "node": "v24.20.0",
+    "sandbox": "local",
+    "cases": 8,
+    "verdicts_correct": 7,
+    "evidence_backed_findings": [
+      9,
+      9
+    ],
+    "affected_file_precision": [
+      9,
+      9
+    ],
+    "affected_file_recall": [
+      9,
+      11
+    ],
+    "repair_success": [
+      5,
+      6
+    ],
+    "fixed_on_first_attempt": 5,
+    "recovery": [
+      0,
+      0
+    ],
+    "test_runs_completed": [
+      14,
+      14
+    ],
+    "false_positives_on_controls": [
+      0,
+      2
+    ],
+    "steps_run_more_than_once": 0,
+    "crashes": 0,
+    "total_duration_s": 350,
+    "llm_calls": 49,
+    "tokens": 302053,
+    "cost_usd": 0.3789
+  },
+  "results": [
+    {
+      "case": "01-chalk-esm-only",
+      "type": "breaking",
+      "investigation": "13a4e26b-f8c2-4684-ac39-8bdf6d5c2ecb",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "no_finding",
+      "verdict_correct": false,
+      "findings": [],
+      "expected_files": [
+        "src/banner.js",
+        "src/format.js"
+      ],
+      "reported_files": [],
+      "files_true_positive": 0,
+      "fixable": true,
+      "repair": null,
+      "failed_attempts": 0,
+      "acceptance": "fail",
+      "repaired": false,
+      "test_runs": [],
+      "steps": 8,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 58912,
+      "llm_calls": 0,
+      "tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "case": "02-node-fetch-esm-only",
+      "type": "breaking",
+      "investigation": "79263bbd-a64d-4878-bc79-e7680aea7e4e",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "node-fetch",
+          "kind": "breaking",
+          "status": "confirmed",
+          "priority": 0.545,
+          "sources": 2
+        }
+      ],
+      "expected_files": [
+        "src/client.js",
+        "src/health.js"
+      ],
+      "reported_files": [
+        "src/client.js",
+        "src/health.js"
+      ],
+      "files_true_positive": 2,
+      "fixable": true,
+      "repair": {
+        "status": "verified",
+        "attempts": 1,
+        "target": "3.3.2",
+        "note": "Tests pass on 3.3.2 on branch veritas/node-fetch."
+      },
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": true,
+      "test_runs": [
+        {
+          "label": "node-fetch:baseline",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        },
+        {
+          "label": "node-fetch:after_upgrade",
+          "exit_code": 1,
+          "passed": 1,
+          "failed": 2
+        },
+        {
+          "label": "node-fetch:attempt_1",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        }
+      ],
+      "steps": 20,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 119071,
+      "llm_calls": 13,
+      "tokens": 58145,
+      "cost_usd": 0.0705
+    },
+    {
+      "case": "03-marked-default-export",
+      "type": "breaking",
+      "investigation": "a05c93fa-cd9a-4e30-a38c-32f6ac28b3a2",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "marked",
+          "kind": "advisory",
+          "status": "confirmed",
+          "priority": 0.733,
+          "sources": 2
+        },
+        {
+          "package": "marked",
+          "kind": "breaking",
+          "status": "confirmed",
+          "priority": 0.485,
+          "sources": 16
+        }
+      ],
+      "expected_files": [
+        "src/render.js"
+      ],
+      "reported_files": [
+        "src/render.js"
+      ],
+      "files_true_positive": 1,
+      "fixable": true,
+      "repair": {
+        "status": "verified",
+        "attempts": 1,
+        "target": "18.1.0",
+        "note": "Tests pass on 18.1.0 on branch veritas/marked."
+      },
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": true,
+      "test_runs": [
+        {
+          "label": "marked:baseline",
+          "exit_code": 0,
+          "passed": 5,
+          "failed": 0
+        },
+        {
+          "label": "marked:after_upgrade",
+          "exit_code": 1,
+          "passed": 3,
+          "failed": 2
+        },
+        {
+          "label": "marked:attempt_1",
+          "exit_code": 0,
+          "passed": 5,
+          "failed": 0
+        }
+      ],
+      "steps": 21,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 40859,
+      "llm_calls": 10,
+      "tokens": 57990,
+      "cost_usd": 0.071
+    },
+    {
+      "case": "04-uuid-deep-imports",
+      "type": "breaking",
+      "investigation": "5fc59654-2682-446d-a845-dee71864472e",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "uuid",
+          "kind": "advisory",
+          "status": "confirmed",
+          "priority": 0.645,
+          "sources": 1
+        },
+        {
+          "package": "uuid",
+          "kind": "breaking",
+          "status": "confirmed",
+          "priority": 0.545,
+          "sources": 9
+        },
+        {
+          "package": "uuid",
+          "kind": "deprecation",
+          "status": "potential",
+          "priority": 0.308,
+          "sources": 1
+        }
+      ],
+      "expected_files": [
+        "src/ids.js",
+        "src/keys.js"
+      ],
+      "reported_files": [
+        "src/ids.js",
+        "src/keys.js"
+      ],
+      "files_true_positive": 2,
+      "fixable": true,
+      "repair": {
+        "status": "verified",
+        "attempts": 1,
+        "target": "14.0.3",
+        "note": "Tests pass on 14.0.3 on branch veritas/uuid."
+      },
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": true,
+      "test_runs": [
+        {
+          "label": "uuid:baseline",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        },
+        {
+          "label": "uuid:after_upgrade",
+          "exit_code": 1,
+          "passed": 0,
+          "failed": 1
+        },
+        {
+          "label": "uuid:attempt_1",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        }
+      ],
+      "steps": 21,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 35525,
+      "llm_calls": 9,
+      "tokens": 46259,
+      "cost_usd": 0.0582
+    },
+    {
+      "case": "05-express-removed-apis",
+      "type": "breaking",
+      "investigation": "05a0a30c-04df-4138-80b2-53ce7485af3d",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "express",
+          "kind": "breaking",
+          "status": "confirmed",
+          "priority": 0.665,
+          "sources": 3
+        }
+      ],
+      "expected_files": [
+        "src/app.js",
+        "src/routes/items.js"
+      ],
+      "reported_files": [
+        "src/app.js",
+        "src/routes/items.js"
+      ],
+      "files_true_positive": 2,
+      "fixable": true,
+      "repair": {
+        "status": "verified",
+        "attempts": 1,
+        "target": "5.3.0",
+        "note": "Tests pass on 5.3.0 on branch veritas/express."
+      },
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": true,
+      "test_runs": [
+        {
+          "label": "express:baseline",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        },
+        {
+          "label": "express:after_upgrade",
+          "exit_code": 1,
+          "passed": 1,
+          "failed": 2
+        },
+        {
+          "label": "express:attempt_1",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        }
+      ],
+      "steps": 20,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 58698,
+      "llm_calls": 13,
+      "tokens": 110936,
+      "cost_usd": 0.1401
+    },
+    {
+      "case": "06-lodash-advisory",
+      "type": "advisory",
+      "investigation": "51943e43-6703-4529-83e7-6b9c35bf6dbc",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "lodash",
+          "kind": "advisory",
+          "status": "confirmed",
+          "priority": 0.733,
+          "sources": 6
+        }
+      ],
+      "expected_files": [
+        "src/labels.js",
+        "src/settings.js"
+      ],
+      "reported_files": [
+        "src/labels.js",
+        "src/settings.js"
+      ],
+      "files_true_positive": 2,
+      "fixable": true,
+      "repair": {
+        "status": "verified",
+        "attempts": 0,
+        "target": "4.18.0",
+        "note": "Tests pass on 4.18.0 on branch veritas/lodash."
+      },
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": true,
+      "test_runs": [
+        {
+          "label": "lodash:baseline",
+          "exit_code": 0,
+          "passed": 4,
+          "failed": 0
+        },
+        {
+          "label": "lodash:after_upgrade",
+          "exit_code": 0,
+          "passed": 4,
+          "failed": 0
+        }
+      ],
+      "steps": 17,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 7964,
+      "llm_calls": 0,
+      "tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "case": "07-control-unused-api",
+      "type": "control",
+      "investigation": "dc1e0703-1b81-4f16-851c-db5cef313d32",
+      "crashed": null,
+      "expected_verdict": "not_affected",
+      "verdict": "not_affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "express",
+          "kind": "breaking",
+          "status": "not_affected",
+          "priority": null,
+          "sources": 3
+        }
+      ],
+      "expected_files": [],
+      "reported_files": [],
+      "files_true_positive": 0,
+      "fixable": false,
+      "repair": null,
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": null,
+      "test_runs": [],
+      "steps": 11,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 26736,
+      "llm_calls": 4,
+      "tokens": 28723,
+      "cost_usd": 0.0391
+    },
+    {
+      "case": "08-control-outdated-only",
+      "type": "control",
+      "investigation": "1a099bf1-05e2-4a12-bcd8-defaa1178f18",
+      "crashed": null,
+      "expected_verdict": "no_finding",
+      "verdict": "no_finding",
+      "verdict_correct": true,
+      "findings": [],
+      "expected_files": [],
+      "reported_files": [],
+      "files_true_positive": 0,
+      "fixable": false,
+      "repair": null,
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": null,
+      "test_runs": [],
+      "steps": 8,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 2568,
+      "llm_calls": 0,
+      "tokens": 0,
+      "cost_usd": 0
+    }
+  ]
+}

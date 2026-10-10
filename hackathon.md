@@ -78,6 +78,14 @@ Still to check by hand: whether Entire checkpoints open in a logged-out browser,
 - Entire audit, honest result: `entire graph stats` reports 12 graph calls against 113 grep/read-style calls in the build sessions, a graph-first rate of 0%. The agent uses the graph at run time, but the build itself has mostly not. From here code is located with `entire graph search` / `impact` first.
 - Entire features found but not usable yet: `entire search`, `recap` and the entire.io web view all need the repository mirrored to Entire, and mirroring fails with "account has no linked GitHub identity" because the Entire account was created with Google. Needs the owner to sign in to Entire with GitHub and install the Entire GitHub App.
 - Planned Entire work: `entire graph verify`, `explain` and `diff` in the repair states; milestones developed on branches with pull requests; and, as a stretch, registering Veritas itself as an Entire agent through the Agent Integration Protocol so the fix commits it makes carry checkpoints with its reasoning.
+- Milestone 5 (and the recovery loop planned for Milestone 6): the repair states are real. PLAN_REPAIR groups findings into one repair per package. BASELINE installs the current versions, runs the project's tests, upgrades the dependency on a branch and runs them again; a test that passed before and fails after is the proof, and only then is a breaking finding `confirmed`. PATCH is a model agent that can change code only through `apply_edit` (one exact, unique text replacement inside the workspace; lockfiles never, tests only with a stated reason). TEST reruns the tests. DIAGNOSE has a second model role read the real failure and the failed change and say what to do next; the failed attempt is reverted and PATCH tries again, up to 3 attempts, after which the finding is `unresolved`.
+- Entire inside the repair loop: `entire graph verify` records a baseline and adjudicates each later run, `entire graph explain` resolves the symbols a failure names for the repair and diagnosis agents, `entire graph diff` lists the functions a patch touched. For projects that use Node's built-in test runner, `verify` can only give a pass/fail verdict; it reads test names for Jest and Vitest.
+- Sandbox: repository commands run with a scrubbed environment (no API keys or tokens), a time limit that also stops child processes, and, in the container mode, no network for tests and only the workspace mounted. On this machine the mode is `local` (no Docker), which is safe only for the benchmark repositories written here. The container mode is written and unit-tested but has not run yet.
+- Tests that ran: `npx vitest run` — 67 passed, 0 failed. `npx tsc --noEmit` clean. New tests cover the edit tool's refusals, the sandbox environment and time limit, the repair flow end to end with a scripted model (first-attempt fix, failed attempt then diagnosis then fix, attempt limit, a "not fixable" diagnosis, a blocked edit to a test), and the registry retry behaviour below.
+- First full benchmark run with repairs, `claude-haiku`, local sandbox (`evidence/bench/dev-m5.json`): 7 of 8 verdicts correct; 5 of 6 fixable cases repaired and passing their held-out acceptance tests, all on the first attempt; both controls correct; 49 model calls, 302,053 tokens, $0.38, 350 seconds.
+- The one failure was real and was not the model's. During the chalk case the npm registry timed out for about a minute. The quick retries ran out and the agent then reported no finding for chalk, as if the package were fine. That is a wrong answer delivered silently, which is the thing Veritas exists to prevent.
+- Fix: registry and audit lookups now get two more rounds, 15 seconds apart, after the quick retries; and if the registry still does not answer, the package is recorded as `unchecked` and `unresolved` with the reason, never as clean. Two tests cover it. Rerunning the chalk case afterwards (`evidence/bench/dev-m5-chalk-rerun.json`): correct verdict, both files named, repaired on the first attempt, acceptance test passes.
+- Not yet seen: a real failed attempt followed by a recovery. Every repair succeeded on its first attempt, including the express case with three removed APIs. The recovery path is covered by tests with a scripted model only. No failure has been staged.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
@@ -102,10 +110,11 @@ Not built yet.
 
 ## Known limitations and next steps
 
-- INTAKE through PRIORITIZE are real; repair, testing and reporting are still stubs. A breaking finding stays `potential` until a test fails on the new version, which the BASELINE state will do.
+- Every state except REPORT is real. Verification so far is "the project's tests pass"; the stricter rules (no regressions per test, diff limited to planned files) and the report are next.
+- The benchmark has not produced a failed-then-recovered repair yet, and scored runs have not happened on the server.
 - Impact accuracy is perfect on this benchmark, so it shows no room to improve yet. The repair stages are where failures are expected.
 - Only direct dependencies are checked for breaking changes; advisories cover the whole installed tree.
-- Next: Milestone 5 (sandbox, patching and test runs).
+- Next: verification rules and the report (rest of Milestone 6), then the server and the baseline benchmark (Milestone 7).
 
 ## Submission
 
