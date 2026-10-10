@@ -5,6 +5,7 @@ import { Orchestrator } from './agent/orchestrator.ts';
 import { initTracing, shutdownTracing } from './observability/neatlogs.ts';
 import { openDb } from './state/db.ts';
 import { Journal } from './state/journal.ts';
+import { Records } from './state/records.ts';
 
 const USAGE = `Veritas — Verified changes. Reliable software.
 
@@ -12,6 +13,7 @@ Usage:
   veritas investigate <repo-url-or-path>   Start a new investigation
   veritas resume <investigation-id>        Continue an interrupted investigation
   veritas status [investigation-id]        Show investigations, or the steps of one
+  veritas export <investigation-id>        Print dependencies, findings and sources as JSON
 `;
 
 async function main(): Promise<number> {
@@ -29,6 +31,13 @@ async function main(): Promise<number> {
     if (!inv) return fail(`Unknown investigation ${arg}`);
     console.log(`${inv.id}  ${inv.status}  state=${inv.current_state}  repo=${inv.repo_url}`);
     console.table(journal.steps(arg).map(({ state, name, status, attempt, duration_ms, error }) => ({ state, name, status, attempt, duration_ms, error })));
+    return 0;
+  }
+
+  if (command === 'export') {
+    if (!arg || !journal.getInvestigation(arg)) return fail(`Unknown investigation ${arg ?? ''}`);
+    const records = new Records(db);
+    console.log(JSON.stringify({ investigation: journal.getInvestigation(arg), dependencies: records.dependencies(arg), findings: records.findings(arg), sources: records.sources(arg) }, null, 2));
     return 0;
   }
 

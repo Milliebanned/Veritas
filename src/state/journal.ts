@@ -76,6 +76,18 @@ export class Journal {
     this.db.prepare('UPDATE investigations SET status = ?, finished_at = ? WHERE id = ?').run(status, finished, id);
   }
 
+  setCommit(id: string, commitSha: string): void {
+    this.db.prepare('UPDATE investigations SET commit_sha = ? WHERE id = ?').run(commitSha, id);
+  }
+
+  /** Output of a finished step, for a later state that builds on it. */
+  output<T>(investigationId: string, state: string, name: string): T | undefined {
+    const row = this.db
+      .prepare("SELECT output_json FROM steps WHERE investigation_id = ? AND state = ? AND name = ? AND status = 'done' ORDER BY id DESC")
+      .get(investigationId, state, name) as { output_json: string | null } | undefined;
+    return row ? (JSON.parse(row.output_json ?? 'null') as T) : undefined;
+  }
+
   steps(id: string): StepRecord[] {
     return this.db
       .prepare('SELECT * FROM steps WHERE investigation_id = ? ORDER BY id')

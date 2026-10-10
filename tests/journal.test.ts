@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Orchestrator } from '../src/agent/orchestrator.ts';
 import { loadLimits } from '../src/agent/limits.ts';
-import { handlers as stubHandlers } from '../src/agent/handlers.ts';
+import { stubHandlers } from '../src/agent/handlers.ts';
 import type { Handlers } from '../src/agent/states.ts';
 import { openDb } from '../src/state/db.ts';
 import { idemKey, Journal, stableJson } from '../src/state/journal.ts';
