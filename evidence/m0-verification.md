@@ -19,7 +19,7 @@ Run on 2026-10-10 from the dev machine (macOS arm64, Node v24.20.0, npm 11.19.0,
 | Checkpoints reach the remote (17) | Confirmed | Pushed as `refs/entire/checkpoints/*` |
 | Entire CLI on Linux (14) | Release asset exists; install not yet run | Run on EC2 in M10 |
 | `GITHUB_TOKEN` in `.env` | First token failed with 401; replaced and confirmed (scope `repo`, 5,000 requests per hour) | Ready for M3 and for opening pull requests |
-| neatlogs shows cost for LiteLLM models (16) | Not verified | Needs a look at the neatlogs UI |
+| neatlogs shows cost for LiteLLM models (16) | **No**: the `veritas-smoke` trace shows tokens only | Take cost from LiteLLM's `x-litellm-response-cost` response header |
 | Trace links viewable outside the account (16) | Not verified | Needs a logged-out browser |
 | Checkpoints viewable by judges on entire.io (17) | Not verified | Needs a logged-out browser |
 | cfo.ai accepts typed assumptions (18) | Not verified | Owner action |
@@ -80,6 +80,12 @@ Both work without a token (60 requests per hour unauthenticated).
 ### OSV
 
 `POST https://api.osv.dev/v1/query` with `{"package":{"name":"lodash","ecosystem":"npm"},"version":"4.17.15"}` returned 6 vulnerabilities with GHSA ids, `database_specific.severity`, and `affected[].ranges[].events` (`introduced` / `fixed`). No key needed.
+
+### Cost per model call
+
+The neatlogs trace for `claude-haiku` shows token counts (14 prompt, 4 completion) and no cost. The LiteLLM endpoint reports cost itself: every chat completion response carries `x-litellm-response-cost` (USD for that call, also split into `-input` and `-output`) and `x-litellm-key-spend` (total spent on the key so far). One 13-token `claude-haiku` call returned a cost of 3.63e-05 USD.
+
+Consequence: the LLM client reads these headers on every call, stores cost in the journal, and sets it as a span attribute so it also appears in neatlogs. `x-litellm-key-spend` gives a running check against the $20 budget.
 
 ### Entire checkpoints
 

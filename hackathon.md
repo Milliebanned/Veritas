@@ -53,7 +53,9 @@ Found in Milestone 0 verification:
 - `npm outdated --json` and `npm audit --json` exit 1 when they have findings. The npm tool must not treat that as a failure.
 - `entire graph impact` prints text only. The agent parses `edges` and `neighbors` and keeps `impact` output as evidence.
 
-Still to check by hand: whether neatlogs shows cost for the LiteLLM models, whether trace links and Entire checkpoints open in a logged-out browser, and whether cfo.ai accepts typed assumptions.
+- neatlogs shows token counts but no cost for the LiteLLM models. The LiteLLM endpoint returns the cost of each call in the `x-litellm-response-cost` header and the key's total spend in `x-litellm-key-spend`; the agent will record both.
+
+Still to check by hand: whether trace links and Entire checkpoints open in a logged-out browser, and whether cfo.ai accepts typed assumptions.
 
 Changed from the plan:
 - State store uses Node's built-in `node:sqlite` instead of `better-sqlite3`. It avoids a native build on the dev machine and on EC2.

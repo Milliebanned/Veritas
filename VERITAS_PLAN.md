@@ -260,7 +260,7 @@ Docs: https://docs.neatlogs.com/sdk/typescript and https://docs.neatlogs.com/doc
 
 - **Install:** `npm install neatlogs@latest` [Verified]. Try `npx @neatlogs/wizard` first; keep its changes only if they match the manual setup below.
 - **Init** (`src/observability/neatlogs.ts`): `await init({ apiKey: process.env.NEATLOGS_API_KEY, workflowName: 'veritas' })`; `await flush(); await shutdown();` on exit [Verified].
-- **Model calls:** `wrapOpenAI(new OpenAI({ baseURL, apiKey }))`. [Verified in M0] Traces appear with `baseURL` set to the LiteLLM endpoint, with token counts. [To verify: whether neatlogs shows cost for the LiteLLM model names; if not, cost is computed from tokens.]
+- **Model calls:** `wrapOpenAI(new OpenAI({ baseURL, apiKey }))`. [Verified in M0] Traces appear with `baseURL` set to the LiteLLM endpoint, with token counts. neatlogs shows tokens but no cost for the LiteLLM model names. Cost comes from the `x-litellm-response-cost` response header on each call (running total in `x-litellm-key-spend`), stored in the journal and set as a span attribute.
 - **Structure:** one `span({ kind: 'WORKFLOW' })` per investigation so all calls nest in one trace; each state a child span; each tool a `span({ kind: 'TOOL', toolName })` [Verified API].
 - **Attributes:** investigation id, state, finding, attempt number, outcome, via `activeSpan.setAttribute` [Verified method; attribute names are our own].
 - **Errors and retries:** `span()` captures errors [Verified]. Each retry is its own span with an `attempt` attribute. No dedicated retry API is assumed.
