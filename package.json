@@ -13,9 +13,13 @@
   "scripts": {
     "veritas": "tsx src/cli.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "serve": "tsx src/server/index.ts",
+    "bench": "tsx bench/run.mts"
   },
   "dependencies": {
+    "@fastify/static": "^10.1.6",
+    "fastify": "^5.12.5",
     "neatlogs": "^1.1.28",
     "openai": "^7.32.0",
     "semver": "^7.8.5",
