@@ -123,6 +123,12 @@ A real failure (evidence item: "a run where an action failed, showing the agent'
 - Not fixed yet. This is the next problem to put through neatlogs.
 
 Entire check (end of this milestone): the code graph was used first to locate the verify handler, the report stub and the patch result before any file was read. `entire graph stats` is recorded below this entry.
+- Milestone 8, first part: the web app. A Fastify server (`npm run serve`) with a plain HTML and JavaScript interface, no build step. Screens: the list of investigations with a form to start one, and for each investigation the live state timeline with findings and sources, patch review (test runs before and after, verification checks, each attempt with its diff, Approve and Reject), the report, and the step history with retries and cost. Investigations run one at a time in the background. An optional shared access token protects the API.
+- Approval is the only point at which anything leaves the workspace: for a GitHub repository each verified fix's branch is pushed and a pull request is opened, with the proof in its description; for a local repository the decision is recorded and the branch stays in the workspace. Pull request opening is written but has not been exercised against GitHub yet.
+- Tested by running a real investigation through the web app's API (express case): verified fix, then approved. Screenshots of the five screens in `evidence/ui/`, taken with a headless browser.
+- A bug found by that run, in the verification rule added earlier today: it rejected a good fix because `entire graph verify` answered "NO EFFECT — the target tests behave exactly as before your edit", and the code accepted only the word PASS. The unit tests had not caught it because their stand-in for the judge never returned that verdict. Fixed: only an explicit FAIL verdict blocks verification; a test covers NO EFFECT.
+- A limit of `entire graph verify` with Node's built-in test runner, found while checking that bug: it reads the output as Jest-style, and it answered NO EFFECT even for a run where two tests newly failed, both with and without test timings in the output. So for these projects its verdict cannot be relied on to catch a regression; the project's own test run remains the source of truth, as planned. Not yet reported to Entire.
+- Tests that ran: `npx vitest run` — 79 passed. `npx tsc --noEmit` clean.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
@@ -147,11 +153,10 @@ Not built yet.
 
 ## Known limitations and next steps
 
-- Every state except REPORT is real. Verification so far is "the project's tests pass"; the stricter rules (no regressions per test, diff limited to planned files) and the report are next.
-- The benchmark has not produced a failed-then-recovered repair yet, and scored runs have not happened on the server.
+- Every state is real, and there is a web interface. Case 9 is unresolved by the agent. No repair has yet failed and then recovered. Opening a pull request on approval has not been run against GitHub. Scored runs have not happened on the server.
 - Impact accuracy is perfect on this benchmark, so it shows no room to improve yet. The repair stages are where failures are expected.
 - Only direct dependencies are checked for breaking changes; advisories cover the whole installed tree.
-- Next: verification rules and the report (rest of Milestone 6), then the server and the baseline benchmark (Milestone 7).
+- Next: put the case 9 failure through neatlogs, then the server and the baseline benchmark.
 
 ## Submission
 

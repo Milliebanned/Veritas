@@ -56,9 +56,9 @@ The business plan (pricing, costs, revenue, runway) is built in cfo.ai from the 
 
 ## Results so far
 
-Eight small benchmark repositories with known answers, each checked against the real packages from npm: five breaking upgrades (chalk, node-fetch, marked, uuid, express), one advisory case (lodash), two controls. Each has a held-out acceptance test the agent never sees. See [bench/README.md](bench/README.md).
+Nine small benchmark repositories with known answers, each checked against the real packages from npm: six breaking upgrades (chalk, node-fetch twice, marked, uuid, express), one advisory case (lodash), two controls. Each has a held-out acceptance test the agent never sees. See [bench/README.md](bench/README.md).
 
-One full run on October 10, `claude-haiku`, local sandbox ([evidence/bench/dev-m5.json](evidence/bench/dev-m5.json)):
+One full run of the first eight on October 10, `claude-haiku`, local sandbox ([evidence/bench/dev-m5.json](evidence/bench/dev-m5.json)):
 
 | | |
 |---|---|
@@ -90,7 +90,9 @@ cp .env.example .env    # then fill in the keys
 npx tsx src/cli.ts investigate <path-or-github-url>   # start an investigation
 npx tsx src/cli.ts resume <investigation-id>          # continue an interrupted one
 npx tsx src/cli.ts status [investigation-id]          # list investigations, or the steps of one
+npx tsx src/cli.ts report <investigation-id>          # the investigation's report
 npx tsx src/cli.ts export <investigation-id>          # findings, sources, repairs and test runs as JSON
+npm run serve                                         # the web interface on http://localhost:3210
 ```
 
 ```bash
@@ -113,16 +115,16 @@ npx tsx bench/run.mts <tag>       # run the agent on the benchmark; writes evide
 
 Working today:
 
-- All states above, from the command line.
-- 69 automated tests.
+- All states above, from the command line and from a web interface (`npm run serve`, then open http://localhost:3210).
+- The report, and an approval step: nothing leaves the workspace until a person approves.
+- 79 automated tests.
 - The benchmark runner with held-out acceptance scoring.
 
 Not built yet:
 
-- The final report and the approval step that opens a pull request.
-- The web interface.
+- Opening a pull request on approval is written but has not been run against GitHub.
 - A run in the container sandbox: the code is written and unit-tested, but has only run in `local` mode.
-- A real failed-then-recovered repair: every repair so far succeeded on its first attempt, so the recovery path has been exercised only in tests with a scripted model.
+- A real failed-then-recovered repair. On the hardest benchmark case the agent tried three times and reported the finding unresolved; see [the report](evidence/reports/09-node-fetch-timeout-unresolved.md).
 
 Limits by design: npm only, no monorepos, direct dependencies only for breaking changes, public repositories only.
 
