@@ -318,7 +318,12 @@ window.addEventListener('hashchange', () => {
     const target = document.getElementById(location.hash.slice(1));
     if (target) return target.scrollIntoView({ behavior: 'smooth' });
   }
-  window.scrollTo(0, 0);
-  render();
+  // Switching tabs inside one investigation keeps you at the tabs; a different page starts at the top.
+  const page = location.hash.split('/').slice(0, 3).join('/');
+  const sameInvestigation = page === lastPage && page.startsWith('#/i/');
+  lastPage = page;
+  if (!sameInvestigation) { window.scrollTo(0, 0); return render(); }
+  render().then(() => document.querySelector('.tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 });
+let lastPage = location.hash.split('/').slice(0, 3).join('/');
 render();
