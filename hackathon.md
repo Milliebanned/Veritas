@@ -144,6 +144,29 @@ Entire check (end of this milestone): the code graph was used first to locate th
 
 - Still true: no repair has yet failed its tests and then recovered. Case 9 went from never fixed to fixed first time.
 - Tests that ran: `npx vitest run` — 84 passed. `npx tsc --noEmit` clean.
+- Server (Milestones 7 and 10). One EC2 `t3.large` in `us-east-1`, in a public subnet of `Hackathon_VPC`, 30 GB disk, Ubuntu 26.04. The first instance was launched in a private subnet and could not be reached; it was terminated and replaced. Installed: Docker 29.1.3, Node v24.21.0, Entire CLI 0.11.4 (checksum verified) with entire-graph v0.4.0. The repository's 84 tests pass on the server.
+- The container sandbox ran for the first time. One fix was needed before it could: containers now run as the workspace's owner instead of root, so files they write can be cleaned up and committed.
+- Full benchmark on the server, all nine cases, `claude-haiku`, project commands in Docker with no network for tests (`evidence/bench/server-v1-haiku.json`):
+
+  | Metric | Result |
+  |---|---|
+  | Verdicts correct | 9 of 9 |
+  | Fixable cases repaired, held-out acceptance test passing | 7 of 7, all on the first attempt |
+  | Controls correct (false positives) | 2 of 2 (0) |
+  | Findings backed by a source read from its URL | 11 of 11 |
+  | Affected files, recall | 13 of 13 |
+  | Affected files, precision | 13 of 17 |
+  | Sandbox runs completed | 20 of 20 |
+  | Crashes, repeated steps | 0, 0 |
+  | Duration | 236 s |
+  | Cost | $0.80 (107 model calls, 664,587 tokens) |
+
+- For comparison, the first full run on October 10 (`evidence/bench/dev-m5.json`: eight cases, local sandbox, before the changes that came out of neatlogs) had 7 of 8 verdicts and 5 of 6 repairs, and case 9 on its first run was unresolved. The two runs differ in machine and sandbox as well as in the agent, so this is not a controlled comparison; the controlled before/after figures are the two single-case tables above.
+- Worse than before: affected-file precision. Impact analysis now also flags files that do not need to change: test files in three cases, and in one case a file that only calls the affected one. Recall is complete. Not fixed.
+- Cost per investigation is higher than on October 10 (about $0.09 to $0.16 for a breaking case, from about $0.05 to $0.14), partly from the longer upgrade-guide sources.
+- The web app is running on the server at http://3.88.235.251:3210, behind a shared access token.
+- Still not seen: a repair that fails its tests and then recovers. Every repair in this run succeeded on its first attempt.
+- Entire check: `entire graph stats` now reports 21 graph calls (8 credited lookups); the graph was used first for each code lookup in this milestone.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
