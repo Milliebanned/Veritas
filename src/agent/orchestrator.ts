@@ -67,7 +67,10 @@ export class Orchestrator {
           throw err;
         }
         const done = this.journal.getInvestigation(investigationId)!;
-        traceOutput({ status: done.status, state: done.current_state, repo: done.repo_url, steps: this.journal.steps(investigationId).length });
+        // The report's own summary is the run's result when there is one.
+        const reported = this.opts.db.prepare('SELECT json FROM reports WHERE investigation_id = ?').get(investigationId) as { json: string } | undefined;
+        const summary = reported ? (JSON.parse(reported.json) as { verdict: string; headline: string }) : null;
+        traceOutput({ status: done.status, verdict: summary?.verdict, headline: summary?.headline, repo: done.repo_url, steps: this.journal.steps(investigationId).length });
         return done;
       },
       undefined,

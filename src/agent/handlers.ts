@@ -3,6 +3,7 @@ import { intake } from './intake.ts';
 import { createInventoryHandler, createIntelHandler, realTools, type IntelTools } from './intel.ts';
 import { prioritize } from './prioritize.ts';
 import { createRepairHandlers, type RepairDeps } from './repair.ts';
+import { report } from './report.ts';
 import type { Handlers, State, StateHandler } from './states.ts';
 
 /** Placeholder for a state that is not implemented yet: records one step and moves on. */
@@ -39,6 +40,7 @@ export function createHandlers(tools: IntelTools = realTools, deps: RepairDeps =
     IMPACT: createImpactHandler(deps),
     PRIORITIZE: prioritize,
     ...createRepairHandlers(deps),
+    REPORT: report,
   };
 }
 
