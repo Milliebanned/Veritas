@@ -7,6 +7,8 @@ export interface Investigation {
   commit_sha: string | null;
   status: 'running' | 'awaiting_approval' | 'done' | 'failed';
   current_state: string;
+  /** GitHub login of the person who started it, when they were signed in. */
+  owner?: string | null;
   started_at: string;
   finished_at: string | null;
 }
@@ -53,11 +55,11 @@ export function idemKey(state: string, name: string, input: unknown): string {
 export class Journal {
   constructor(private readonly db: Db) {}
 
-  createInvestigation(repoUrl: string, initialState: string): Investigation {
+  createInvestigation(repoUrl: string, initialState: string, owner: string | null = null): Investigation {
     const id = randomUUID();
     this.db
-      .prepare('INSERT INTO investigations (id, repo_url, current_state, started_at) VALUES (?, ?, ?, ?)')
-      .run(id, repoUrl, initialState, new Date().toISOString());
+      .prepare('INSERT INTO investigations (id, repo_url, current_state, started_at, owner) VALUES (?, ?, ?, ?, ?)')
+      .run(id, repoUrl, initialState, new Date().toISOString(), owner);
     return this.getInvestigation(id)!;
   }
 

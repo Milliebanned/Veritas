@@ -11,5 +11,8 @@ export function openDb(path: string = process.env.VERITAS_DB_PATH ?? '.veritas/v
   const db = new DatabaseSync(path);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  // Columns added after the first release. SQLite has no "ADD COLUMN IF NOT EXISTS".
+  const columns = (db.prepare('PRAGMA table_info(investigations)').all() as { name: string }[]).map((c) => c.name);
+  if (!columns.includes('owner')) db.exec('ALTER TABLE investigations ADD COLUMN owner TEXT');
   return db;
 }

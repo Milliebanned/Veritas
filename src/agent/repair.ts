@@ -405,7 +405,10 @@ export function createRepairHandlers(deps: RepairDeps = {}): Record<'PLAN_REPAIR
             parameters: z.toJSONSchema(PatchSubmission) as Record<string, unknown>,
             parse: (args) => {
               const submission = PatchSubmission.parse(args);
-              if (edited.size === 0) throw new Error('No file has been edited yet. Use apply_edit to change the code, then submit.');
+              if (edited.size === 0) {
+                const files = [...new Set(records.affectedSites(ctx.investigationId).filter((s) => findingIds(repair).includes(s.finding_id)).map((s) => s.file))];
+                throw new Error(`No file has been edited yet. Use apply_edit to change the code, then submit.${files.length ? ` The files reported as affected are: ${files.join(', ')}.` : ''}`);
+              }
               return submission;
             },
           },

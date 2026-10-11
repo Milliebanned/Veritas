@@ -133,3 +133,11 @@ CREATE TABLE IF NOT EXISTS repairs (
   note TEXT,
   UNIQUE (investigation_id, package)
 );
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT PRIMARY KEY,
+  github_login TEXT NOT NULL,
+  avatar_url TEXT,
+  github_token TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);

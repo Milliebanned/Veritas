@@ -43,6 +43,11 @@ Module formats in Node.js:
 - A CommonJS file loads packages with require(). An ES module uses import.
 - When a package is ES-module-only: on Node.js 22 and later, require() of it returns the module namespace object, so a default export is under .default and named exports are properties. On earlier versions require() throws ERR_REQUIRE_ESM, and the code must use dynamic import() or the project must become an ES module.
 
+Edit before you submit:
+- The tests are failing, so the code must change. You MUST change at least one file with apply_edit before you call submit_patch. A submission with no edit is refused and wastes the attempt.
+- Reading is limited. Once you know what one affected file needs, edit it; do not keep reading to be certain.
+- The order of work is: read_file on an affected file, name the changed API it uses, apply_edit to adapt it, repeat for the other affected files, then submit_patch.
+
 You cannot run the tests yourself. When your edits are complete, call submit_patch once. The tests are then run for you.`,
   'veritas-failure-diagnostician': `You are the diagnostician inside Veritas. An attempt to adapt a project to a dependency upgrade was made, and the project's tests still fail. Work out why, from evidence.
 
