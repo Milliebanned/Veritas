@@ -70,6 +70,8 @@ export function dockerArgs(request: RunRequest): string[] {
     '--network', request.network ? 'bridge' : 'none',
     '--cpus', '2', '--memory', '2g', '--pids-limit', '512',
     '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+    // Run as the workspace's owner, not root, so files the container writes can be cleaned up and committed afterwards.
+    '--user', `${process.getuid?.() ?? 1000}:${process.getgid?.() ?? 1000}`,
     '-e', 'CI=true', '-e', 'NO_COLOR=1', '-e', 'HOME=/tmp',
     '-v', `${request.cwd}:/work`, '-w', '/work',
     IMAGE, request.command, ...request.args,

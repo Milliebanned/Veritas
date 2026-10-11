@@ -124,6 +124,7 @@ describe('sandbox', () => {
     const args = dockerArgs(request);
     expect(args.join(' ')).toContain('--network none');
     expect(args.join(' ')).toContain('--cap-drop ALL');
+    expect(args[args.indexOf('--user') + 1]).toBe(`${process.getuid?.()}:${process.getgid?.()}`);
     expect(args.filter((a) => a.includes(':/')).join()).toBe('/ws/repo:/work');
     expect(dockerArgs({ ...request, network: true }).join(' ')).toContain('--network bridge');
     expect(args.slice(-3)).toEqual(['sh', '-c', 'npm test']);
