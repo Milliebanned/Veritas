@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4NAZGXP7WM2EF5S8W8CGE6H",
+  "session_id": "4836bf52-cf6c-452b-98b0-b0deb7acb0c9",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-11T11:18:46.566365Z",
+  "branch": "m8-web",
+  "checkpoints_count": 4,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "358c2766ad43",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 664,
+    "cache_creation_tokens": 1630331,
+    "cache_read_tokens": 124631894,
+    "output_tokens": 428425,
+    "api_call_count": 278
+  },
+  "session_metrics": {
+    "turn_count": 20
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 1382,
+      "user_lines_removed": 2,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "package-lock.json": 880,
+        "package.json": 5,
+        "src/agent/repair.ts": 1,
+        "src/server/approval.ts": 83,
+        "src/server/index.ts": 140,
+        "src/tools/github.ts": 51,
+        "src/tools/graph.ts": 2,
+        "tests/repair.test.ts": 5,
+        "web/app.js": 162,
+        "web/index.html": 17,
+        "web/style.css": 36
+      },
+      "user_removed_per_file": {
+        "package.json": 1,
+        "src/tools/graph.ts": 1
+      }
+    }
+  ]
+}
