@@ -14,6 +14,7 @@ const LOGO = '<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" heigh
 const GITHUB = '<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.33.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0z"/></svg>';
 let me = null;
 let timer = null;
+let cleanup = [];
 
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const short = (repo) => repo.replace(/^https:\/\/github\.com\//, '').replace(/^.*\/bench\/cases\//, 'benchmark/').replace(/\/repo$/, '');
@@ -48,59 +49,82 @@ function bindNav() {
 async function landing() {
   const pub = await fetch('/api/public').then((r) => r.json()).catch(() => ({ benchmark: null }));
   const b = pub.benchmark;
-  const cta = me?.signed_in
-    ? '<a class="btn big" href="#/app">Open your investigations</a>'
+  const primary = me?.signed_in
+    ? '<a class="btn big glow" href="#/app">Open your investigations <span class="arrow">→</span></a>'
     : me?.mode === 'github'
-      ? `<a class="btn big dark" href="/auth/github">${GITHUB} Sign in with GitHub</a>`
-      : '<a class="btn big" href="#/app">Open the app</a>';
-  const fine = me?.signed_in ? '' : me?.mode === 'github' ? 'Veritas asks for access to your public repositories so it can open a pull request when you approve a fix. It never pushes before you approve.' : me?.mode === 'token' ? 'This preview is protected by an access code.' : '';
+      ? `<a class="btn big dark glow" href="/auth/github">${GITHUB} Sign in with GitHub</a>`
+      : '<a class="btn big glow" href="#/app">Open the app <span class="arrow">→</span></a>';
+  const ICON = {
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    box: '<path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14 9l2 2"/>',
+    undo: '<path d="M4 8v5h5"/><path d="M4 13a8 8 0 1 0 2.3-5.7"/>',
+    check: '<path d="M20 6L9 17l-5-5"/>',
+  };
+  const icon = (name) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</svg>`;
   app.innerHTML = `${nav(false)}
-    <section class="hero">
-      <span class="eyebrow"><i></i>Built for neatHack with neatlogs, Entire and cfo.ai</span>
-      <h1>Dependency tools send alerts.<br><em>Veritas sends proof.</em></h1>
-      <p class="lede">Point Veritas at a JavaScript or TypeScript repository. It finds the upgrades and advisories that matter, proves whether they break your code, writes the fix, and tests it. You approve; it opens the pull request.</p>
-      <div class="cta">${cta}<a class="btn big ghost" href="#how">See how it works</a></div>
-      <p class="fine">${esc(fine)}</p>
-      <div class="demo"><div class="bar"><i></i><i></i><i></i></div><div class="body">
-        <div><span class="dim">repo</span>&nbsp; acme/items-api &nbsp;<span class="dim">express 4.22.3 → 5.3.0</span></div>
-        <div><span class="ok">✓</span> read the release notes and the migration guide</div>
-        <div><span class="ok">✓</span> found 4 call sites using removed APIs &nbsp;<span class="dim">src/app.js:16, src/routes/items.js:7, :8, :14</span></div>
-        <div><span class="ok">✓</span> tests pass on 4.22.3 &nbsp;<span class="no">✗ fail on 5.3.0</span> &nbsp;<span class="dim">TypeError: app.del is not a function</span></div>
-        <div><span class="ok">✓</span> wrote the fix on branch veritas/express</div>
-        <div><span class="ok">✓</span> tests pass again, nothing regressed &nbsp;<span class="dim">3 passed, 0 failed</span></div>
-        <div><span class="dim">→ waiting for your approval to open a pull request</span></div>
-      </div></div>
+    <section class="hero3">
+      <div class="gridlines"></div><div class="orb o1"></div><div class="orb o2"></div>
+      <canvas id="scene" aria-hidden="true"></canvas>
+      <div class="hero-copy">
+        <span class="eyebrow"><i></i>Autonomous dependency agent</span>
+        <h1>Dependency tools<br>send alerts.<br><em>Veritas sends proof.</em></h1>
+        <p class="lede">An agent that reads what changed in your dependencies, proves whether it breaks your code, writes the fix, and tests it. You approve. It opens the pull request.</p>
+        <div class="cta">${primary}<a class="btn big ghost" href="#watch">Watch it work</a></div>
+        <div class="assure"><span>${icon('eye')}Read-only until you approve</span><span>${icon('box')}Tests run in an isolated container</span><span>${icon('undo')}Revoke access any time</span></div>
+      </div>
+      <a class="scroll-cue" href="#watch" aria-label="Scroll down"><span></span></a>
     </section>
-    <div class="wrap">
-      <section class="band" id="how"><h2>Four questions, answered with evidence</h2><p class="sub">Every claim Veritas makes links to where it came from: a release note, an advisory, a line of your code, or a test run.</p>
-        <div class="grid4">
-          <div class="card"><div class="num">01</div><h3>What changed?</h3><p>Release notes, changelogs, migration guides and published advisories, each stored with its source.</p></div>
-          <div class="card"><div class="num">02</div><h3>Does it affect you?</h3><p>The code graph finds where the package is used; the agent reads those files and gives a verdict per call site.</p></div>
-          <div class="card"><div class="num">03</div><h3>What is the fix?</h3><p>The smallest change that works, written on a branch in a private copy of your repository.</p></div>
-          <div class="card"><div class="num">04</div><h3>Does the fix work?</h3><p>Your own tests decide. They must fail after the upgrade and pass after the fix, with nothing else broken.</p></div>
-        </div></section>
-      <section class="band" id="proof"><h2>Measured, not claimed</h2><p class="sub">${b ? `Nine repositories with known answers, each fix judged by a held-out test the agent never sees. Run on ${esc(new Date(b.ran_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }))} with ${esc(b.model)}, tests inside Docker.` : 'Benchmark results will appear here.'}</p>
-        ${b ? `<div class="grid4">
-          <div class="card stat"><b>${b.verdicts_correct}/${b.cases}</b><span>verdicts correct</span></div>
-          <div class="card stat"><b>${b.repair_success[0]}/${b.repair_success[1]}</b><span>fixes passing the held-out test</span></div>
-          <div class="card stat"><b>${b.false_positives[0]}</b><span>false alarms on ${b.false_positives[1]} control repositories</span></div>
-          <div class="card stat"><b>$${(b.cost_usd / b.cases).toFixed(2)}</b><span>average model cost per repository</span></div>
-        </div>` : ''}</section>
-      <section class="band"><h2>It says when it does not know</h2>
-        <div class="grid3">
-          <div class="card"><h3>Not affected is an answer</h3><p>If a breaking change does not touch your code, Veritas says so and leaves it alone.</p></div>
-          <div class="card"><h3>Unresolved is an answer</h3><p>Three attempts, each diagnosed from the real test output. If none works, the report says what was tried.</p></div>
-          <div class="card"><h3>Nothing leaves without you</h3><p>Fixes live in a private workspace. Only your approval pushes a branch and opens a pull request.</p></div>
-        </div></section>
-      <section class="band" id="tools"><h2>Built with</h2>
-        <div class="grid3">
-          <div class="card"><h3>neatlogs</h3><p>Every model call, tool call, retry and failure is traced. Two of the agent's own faults were found from flagged traces and fixed through pull requests neat AI opened.</p></div>
-          <div class="card"><h3>Entire</h3><p>Checkpoints record the context behind each change to Veritas. Its code graph is how the agent finds where a package is used.</p></div>
-          <div class="card"><h3>cfo.ai</h3><p>Where the business plan is made: pricing, costs and runway, starting from the measured cost of one investigation.</p></div>
-        </div></section>
-      <footer class="foot"><span>Veritas — Verified changes. Reliable software.</span><a href="https://github.com/Milliebanned/Veritas" target="_blank" rel="noreferrer">github.com/Milliebanned/Veritas</a></footer>
-    </div>`;
+
+    <section class="section reveal" id="watch"><div class="wrap split">
+      <div><span class="kicker">The agent at work</span><h2>One investigation, start to finish</h2>
+        <p class="sub">Thirteen stages, driven by plain code. A model makes the decisions inside three of them, and tests decide whether it was right.</p>
+        <ul class="ticks"><li>${icon('check')}Every stage is journaled, so an interrupted run resumes where it stopped</li><li>${icon('check')}A failed fix is diagnosed from the real test output, reverted, and tried again</li><li>${icon('check')}Three attempts at most, then it reports the finding as unresolved</li></ul></div>
+      <div class="console"><div class="bar"><i></i><i></i><i></i><span>veritas · live</span></div><div class="lines" id="console"></div></div>
+    </div></section>
+
+    ${b ? `<section class="section reveal" id="proof"><div class="wrap"><span class="kicker">Measured, not claimed</span><h2>Benchmarked against known answers</h2>
+      <p class="sub">Nine repositories, each with a held-out acceptance test the agent never sees. Run on ${esc(new Date(b.ran_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }))}, ${esc(b.model)}, tests inside Docker.</p>
+      <div class="metrics">
+        <div class="metric"><b><span data-count="${b.verdicts_correct}">0</span>/${b.cases}</b><span>verdicts correct</span></div>
+        <div class="metric"><b><span data-count="${b.repair_success[0]}">0</span>/${b.repair_success[1]}</b><span>fixes passing the held-out test</span></div>
+        <div class="metric"><b><span data-count="${b.false_positives[0]}">0</span></b><span>false alarms on ${b.false_positives[1]} control repositories</span></div>
+        <div class="metric"><b><span data-count="${(b.cost_usd / b.cases).toFixed(2)}" data-prefix="$" data-decimals="2">$0.00</span></b><span>average model cost per repository</span></div>
+      </div></div></section>` : ''}
+
+    <section class="section reveal" id="how"><div class="wrap"><span class="kicker">How it works</span><h2>Four questions, answered with evidence</h2>
+      <p class="sub">Every claim links to where it came from: a release note, an advisory, a line of your code, or a test run.</p>
+      <div class="steps4">
+        <div class="tile"><div class="n">01</div><h3>What changed?</h3><p>Release notes, changelogs, migration guides and published advisories, each stored with its source.</p></div>
+        <div class="tile"><div class="n">02</div><h3>Does it affect you?</h3><p>The code graph finds where the package is used. The agent reads those files and gives a verdict per call site.</p></div>
+        <div class="tile"><div class="n">03</div><h3>What is the fix?</h3><p>The smallest change that works, written on a branch in a private copy of your repository.</p></div>
+        <div class="tile"><div class="n">04</div><h3>Does the fix work?</h3><p>Your own tests decide: they must fail after the upgrade, pass after the fix, and break nothing else.</p></div>
+      </div></div></section>
+
+    <section class="section reveal" id="trust"><div class="wrap"><span class="kicker">Your access</span><h2>What Veritas does with your GitHub account</h2>
+      <p class="sub">You are trusting an agent with your code. Here is exactly what that means.</p>
+      <div class="trust">
+        <div class="tile">${icon('eye')}<h3>It works on a copy</h3><p>Your repository is cloned into a private workspace. The original is never modified by an investigation.</p></div>
+        <div class="tile">${icon('lock')}<h3>Nothing is pushed before you approve</h3><p>Approval is the only step that touches GitHub. It pushes one branch per fix and opens a pull request you can review or close.</p></div>
+        <div class="tile">${icon('box')}<h3>Your code runs in isolation</h3><p>Installs skip package scripts. Tests run in a throwaway container with no network and only the workspace mounted.</p></div>
+        <div class="tile">${icon('key')}<h3>The narrowest permission that works</h3><p>Sign-in asks GitHub for access to public repositories, which is what opening a pull request requires. That permission also allows writing to them; Veritas uses it only to push the fix branch after you approve. Your access stays on the server and is never sent to the model or to project code.</p></div>
+        <div class="tile">${icon('undo')}<h3>Leave whenever you like</h3><p>Sign out to end your session, or revoke Veritas in your GitHub settings under Applications. Either takes effect at once.</p></div>
+        <div class="tile">${icon('check')}<h3>It tells you what it could not do</h3><p>Not affected, unresolved and could not check are all real answers. A package it could not examine is never reported as fine.</p></div>
+      </div></div></section>
+
+    <section class="section reveal" id="tools"><div class="wrap"><span class="kicker">Built with</span><h2>Three tools, each doing real work</h2>
+      <div class="steps3">
+        <div class="tile"><h3>neatlogs</h3><p>Every model call, tool call, retry and failure is traced. Two faults in the agent itself were found from flagged traces and fixed through pull requests neat AI opened.</p></div>
+        <div class="tile"><h3>Entire</h3><p>Checkpoints record the reasoning behind each change to Veritas. Its code graph is how the agent finds where a package is used.</p></div>
+        <div class="tile"><h3>cfo.ai</h3><p>Where the business plan is made: pricing, costs and runway, starting from the measured cost of one investigation.</p></div>
+      </div></div></section>
+
+    <section class="section reveal"><div class="wrap"><div class="final"><h2>Stop reading alerts. Start reviewing proof.</h2><p>Point Veritas at a repository and get back a tested fix, or an honest reason why not.</p><div class="cta">${primary}</div></div></div></section>
+    <div class="wrap"><footer class="foot"><span>Veritas · Verified changes. Reliable software.</span><a href="https://github.com/Milliebanned/Veritas" target="_blank" rel="noreferrer">github.com/Milliebanned/Veritas</a></footer></div>`;
   bindNav();
+  const { startHero, startConsole, startReveal } = await import('/hero3d.js');
+  cleanup = [startHero(document.getElementById('scene')), startConsole(document.getElementById('console')), startReveal(app)];
 }
 
 function gate(message) {
@@ -254,6 +278,8 @@ async function investigation(id, tab) {
 
 async function render() {
   clearTimeout(timer);
+  for (const stop of cleanup) stop();
+  cleanup = [];
   const [, view, id, tab] = location.hash.replace(/^#/, '').split('/');
   try {
     const token = localStorage.getItem('veritas-token');
@@ -268,5 +294,13 @@ async function render() {
   }
 }
 
-window.addEventListener('hashchange', () => { window.scrollTo(0, 0); render(); });
+window.addEventListener('hashchange', () => {
+  // "#how" and the like are places on the landing page, not pages of the app.
+  if (!location.hash.startsWith('#/') && location.hash.length > 1) {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) return target.scrollIntoView({ behavior: 'smooth' });
+  }
+  window.scrollTo(0, 0);
+  render();
+});
 render();
