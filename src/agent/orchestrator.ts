@@ -26,8 +26,8 @@ export class Orchestrator {
     this.limits = opts.limits ?? loadLimits();
   }
 
-  start(repoUrl: string): Investigation {
-    return this.journal.createInvestigation(repoUrl, 'INTAKE');
+  start(repoUrl: string, owner: string | null = null): Investigation {
+    return this.journal.createInvestigation(repoUrl, 'INTAKE', owner);
   }
 
   /**

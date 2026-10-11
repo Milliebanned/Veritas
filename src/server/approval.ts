@@ -58,7 +58,7 @@ export function pullRequestBody(report: Report, pkg: string): string {
  * Carries out a person's decision. Approval is the only point at which anything leaves the
  * workspace: each verified repair's branch is pushed and a pull request is opened for it.
  */
-export async function decide(db: Db, investigationId: string, decision: Approval['decision']): Promise<Approval> {
+export async function decide(db: Db, investigationId: string, decision: Approval['decision'], githubToken: string | undefined = process.env.GITHUB_TOKEN): Promise<Approval> {
   const inv = new Journal(db).getInvestigation(investigationId);
   if (!inv) throw new ApprovalError('Unknown investigation');
   if (inv.status !== 'awaiting_approval') throw new ApprovalError(`Investigation is ${inv.status}, not awaiting approval`);
@@ -70,8 +70,8 @@ export async function decide(db: Db, investigationId: string, decision: Approval
 
   const target = parseRepoUrl(inv.repo_url);
   if (!target) return record(db, investigationId, 'approved', null); // a local repository: the branches stay in the workspace
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) throw new ApprovalError('GITHUB_TOKEN is not set, so a pull request cannot be opened');
+  const token = githubToken;
+  if (!token) throw new ApprovalError('No GitHub access is available, so a pull request cannot be opened');
 
   const urls: string[] = [];
   for (const repair of verified) {
