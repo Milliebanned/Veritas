@@ -248,6 +248,17 @@ describe('repair states', () => {
     expect(second).toContain('This is attempt 2 of 3.');
   });
 
+  it('counts an attempt that never edits anything as a failed attempt, not a crash', async () => {
+    const empty = { name: 'submit_patch', args: { plan: 'done', files_changed: [] } };
+    const chat = scriptedChat([impact, [empty], [empty], [diagnosis()], [goodEdit], [submit('Destructure the named export.')]]);
+    const { inv, records } = await investigate(chat);
+
+    expect(inv.status).toBe('awaiting_approval');
+    expect(records.repairs(inv.id)).toMatchObject([{ status: 'verified', attempts: 2 }]);
+    expect(records.attempts(inv.id)[0]).toMatchObject({ n: 1, outcome: 'tests_failed' });
+    expect(records.attempts(inv.id)[0]?.plan_text).toContain('No change was produced.');
+  });
+
   it('stops at the attempt limit and reports the finding as unresolved', async () => {
     const chat = scriptedChat([impact, [wrongEdit], [submit('one')], [diagnosis()], [wrongEdit], [submit('two')], [diagnosis()]]);
     const { inv, records, dir } = await investigate(chat, [], 2);

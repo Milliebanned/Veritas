@@ -69,7 +69,8 @@ describe('tool loop', () => {
 
     expect(out).toMatchObject({ result: 42, turns: 2, costUsd: 0.002 });
     expect(out.toolCalls).toEqual([{ name: 'echo', args: { text: 'a' }, ok: true }, { name: 'submit', args: { answer: 42 }, ok: true }]);
-    expect(seen[1]?.messages.at(-1)).toMatchObject({ role: 'tool', content: 'echo:a' });
+    expect(seen[1]?.messages.at(-1)).toMatchObject({ role: 'tool', content: 'echo:a\n[4 tool calls left]' });
+    expect(String(seen[0]?.messages[1]?.content)).toContain('You have 5 tool calls in total, counting the final submit.');
     expect(seen[0]?.toolChoice).toBe('required');
   });
 
@@ -95,6 +96,21 @@ describe('tool loop', () => {
     expect(out.result).toBe(1);
     expect(seen[2]?.tools?.map((t) => (t.type === 'function' ? t.function.name : ''))).toEqual(['submit']);
     expect(seen[2]?.toolChoice).toEqual({ type: 'function', function: { name: 'submit' } });
+  });
+
+  it('keeps the last calls for the tools that produce the result', async () => {
+    const seen: ChatRequest[] = [];
+    const act: LoopTool = { ...echo, name: 'act' };
+    const names = (r: ChatRequest | undefined) => r?.tools?.map((t) => (t.type === 'function' ? t.function.name : ''));
+    const chat = scriptedChat([[{ name: 'echo', args: { text: '1' } }], [{ name: 'echo', args: { text: '2' } }], [{ name: 'act', args: { text: 'x' } }], [{ name: 'submit', args: { answer: 9 } }]], seen);
+    const out = await runToolLoop({ chat, ctx, system: 's', user: 'u', tools: [echo, act], submit, maxToolCalls: 5, reserve: { calls: 4, tools: ['act'] } });
+
+    expect(out.result).toBe(9);
+    expect(names(seen[0])).toEqual(['echo', 'act', 'submit']);
+    // After one call, four are left: reading is closed and only acting and submitting remain.
+    expect(names(seen[1])).toEqual(['act', 'submit']);
+    expect(String(seen[2]?.messages.at(-1)?.content)).toBe('Error: echo is no longer available. Only act and submit are left.');
+    expect(String(seen[0]?.messages[1]?.content)).toContain('The last 4 can only be act and submit');
   });
 
   it('reports a tool error and malformed arguments to the model instead of crashing', async () => {
