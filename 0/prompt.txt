@@ -1,0 +1,123 @@
+Great. What is neatlog function in all of this thing. All this fixing that you are doing, is that not um, neatlog that is supposed to be doing it? Because I don't even understand the neatlog function and work in all of this. Also, I cannot go up and start searching for message above. Just bring it up, bring it up again. You're talking about uh, uh, entire too.
+
+---
+
+That was Veritas doing a bad job. Spotting that in the recording, working out the cause, and suggesting the improvement is neatlogs' job. I did it by hand this time, because neatlogs' platform is currently stuck and can't process our recordings.
+
+here You said suggesting. Or suggestion. Does that mean neatlog cannot fix it?
+
+---
+
+Step 4. Put it on neatlog. Because the developer during our meeting today said that they have given all the features to us. Which means that step 4 you think it cannot do. And some uh, paid plan, it can it can do it. Also, the cursor part agent, the cursor cloud agent, how can I get that?
+
+---
+
+i have merged it. also, i thnk i connected my github and repo properly
+
+---
+
+Fucking clown. I've already saved it. Before I just went there again to show you. That I've connected it before.
+
+---
+
+try again
+
+---
+
+Continue from where you left off.
+
+---
+
+go and take those screenshots for me. I have um, Claude uh, extension. On my Chrome, so you can literally access it. And take the screenshots.
+
+---
+
+Continue from where you left off.
+
+---
+
+go and check it again, i gave the permission already
+
+---
+
+I can't seem to merge this particular thing. The merge button keeps rolling, and when I place my cursor on it, it shows this.
+
+---
+
+uh, finish merging. So you are very sure that we are using neatlog in the right way you want us to use it, right? Now, what is the next one? I'm not saying you should start the next one yet. I'm asking, what is the next one?
+
+---
+
+Also, also, we have been focusing on neatlog. Don't forget entire. You have to make sure and check time to time that we are using entire the way we are supposed to use it.
+
+---
+
+done. However, I am entirely disappointed in you. About what you did on entire. Despite the fact of hard prompt and instruction that I gave you, you still went on to do what is on your mind . You are a shame
+
+---
+
+I don't understand what you are trying to tell me here. I literally don't understand.
+
+---
+
+that is literally homepagelink
+
+---
+
+It shows. However, why does the project lack comprehensive README?
+
+---
+
+now move to the next milestone
+
+---
+
+So why do we have to open neatlog? And you know, manually give it prompt to you know check the figs and make a pull request before we can. Uh, is it, is neatlog not like supposed to do it automatically? Understand? Why let's say the agent is failing to do its job, at the back end, neatlog is supposed to like see it automatically, fix it automatically, and do stuff on it automatically, right?
+
+---
+
+So I see there are some people who are using entire with open code. But I don't understand because, let me give you an example of the um, the message sent by someone. I've sent like a couple of people you know, send this kind of message, but I still don't understand entire with open code. Like, what's the correlation?
+
+---
+
+So I just merged the uh, request pool. Okay, so what are we going to do now? Like, I mean, you are saying neatlog is having some kind of problem that we don't understand yet. What's the next thing? How we are supposed to doing
+
+---
+
+i have published my first neat public building since yesterday buffon. you do your job
+
+---
+
+<task-notification>
+<task-id>bouu81mfc</task-id>
+<tool-use-id>toolu_01VDHJetGhTz2bxmG9G56H54</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-Apple-neatlog/6cbb0655-ec34-476d-a414-19317c18ac1f/tasks/bouu81mfc.output</output-file>
+<status>failed</status>
+<summary>Background command "Retake the app screenshots with the headless browser, which renders only the page itself" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+tell me how to get what you need of aws
+
+---
+
+13.222.49.252
+
+yes it is there
+
+---
+
+also, it says running
+
+---
+
+This is what I see at the VPC side.
+
+---
+
+what about this
+
+---
+
+3.88.235.251
