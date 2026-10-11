@@ -107,6 +107,23 @@ Still to check by hand: whether Entire checkpoints open in a logged-out browser,
 - Added `README.md`: what Veritas does, how each state works, how the three tools are used, results so far, how to run it, and what is not built yet.
 - Entire's graph in the build itself is still weak: `entire graph stats` reports 15 graph calls against 178 search-and-read calls, a graph-first rate of 0%, and only 3 of those graph calls came after the earlier promise to use it first. This has to change in the next milestone and will be measured again.
 
+### 2026-10-11
+
+Completed:
+- Verification rules (rest of Milestone 6). A repair is `verified` only when: the tests passed before the upgrade; the failure was reproduced when code had to change; the tests pass now; no fewer tests pass than before; and `entire graph verify` judges the run as passing when it is available. Files changed outside those impact analysis flagged, and runs where per-test comparison was not possible, are recorded as caveats. A fix that passes its tests but breaks a rule is reported as `unresolved`.
+- The report. REPORT is now a real state: it assembles findings, sources (read from the source versus inferred), affected sites, each repair's test runs, every attempt with its plan, diff and diagnosis, the verification checks, what could not be checked, remaining risk and cost. No model is involved. `veritas report <id>` prints it.
+- Benchmark case 9, built to be harder (`bench/cases/09-node-fetch-timeout`): node-fetch 2 to 3 in a project that relies on the removed `timeout` option and on the error type a timeout used to raise. Three changes are needed and each failure only shows once the one before is fixed. Confirmed with `node bench/reproduce.mjs`: baseline passes, the upgrade fails, the reference fix passes the tests and the acceptance test.
+- Tests that ran: `npx vitest run` — 78 passed, 0 failed. `npx tsc --noEmit` clean.
+
+A real failure (evidence item: "a run where an action failed, showing the agent's next step"):
+- First run of the agent on case 9, `claude-haiku` (`evidence/bench/m6-case09.json`, report in `evidence/reports/09-node-fetch-timeout-unresolved.md`, neatlogs trace `af018a75f8994e89807d0faf9f373dcf`): impact verdict correct, failure reproduced, then three repair attempts all failed and the finding was reported `unresolved`. 65 model calls, $0.41, 144 seconds.
+- What the agent did after each failure: attempt 1 fixed the import; the diagnosis said the timeout error type had changed; attempt 2 changed the error check to `err.name === 'AbortError'`; the next diagnosis guessed `err.code === 'ABORT_ERR'`; attempt 3 tried that; the last diagnosis reversed it again. It stopped at the limit and said so. It did not claim a fix.
+- Why it failed, from the record: none of the stored sources says the `timeout` option was removed. The v3.0.0 release note is two lines and points to a changelog; the upgrade guide that states the removal (`docs/v3-UPGRADE-GUIDE.md`) was never fetched, because the release links to it with the word "changelog", and only links mentioning migration or upgrade are followed. Without that fact every attempt left `timeout: timeoutMs` in place, so the request never timed out and the diagnoses went looking in the wrong file. The diagnosis role also cannot run anything, so its claims about the error object were guesses.
+- Also seen: impact analysis flagged `test/status.test.js` as affected, which is a false positive on files (2 of 3 correct).
+- Not fixed yet. This is the next problem to put through neatlogs.
+
+Entire check (end of this milestone): the code graph was used first to locate the verify handler, the report stub and the patch result before any file was read. `entire graph stats` is recorded below this entry.
+
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
 - neatlogs' own SDK Doctor fails the same way: `neatlogs doctor --probe` passes every local check and then fails with `TRACE_READBACK_TIMEOUT`. Output saved in `evidence/neatlogs/doctor-probe-2026-10-10.json`. The SDK reports successful delivery with 0 dropped spans and 0 failed exports.

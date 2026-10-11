@@ -1,0 +1,124 @@
+{
+  "summary": {
+    "tag": "m6-case09",
+    "ran_at": "2026-10-11T10:25:26.541Z",
+    "model": "claude-haiku",
+    "node": "v24.20.0",
+    "sandbox": "local",
+    "cases": 1,
+    "verdicts_correct": 1,
+    "evidence_backed_findings": [
+      1,
+      1
+    ],
+    "affected_file_precision": [
+      2,
+      3
+    ],
+    "affected_file_recall": [
+      2,
+      2
+    ],
+    "repair_success": [
+      0,
+      1
+    ],
+    "fixed_on_first_attempt": 0,
+    "recovery": [
+      0,
+      1
+    ],
+    "test_runs_completed": [
+      5,
+      5
+    ],
+    "false_positives_on_controls": [
+      0,
+      0
+    ],
+    "steps_run_more_than_once": 0,
+    "crashes": 0,
+    "total_duration_s": 144,
+    "llm_calls": 65,
+    "tokens": 348653,
+    "cost_usd": 0.4087
+  },
+  "results": [
+    {
+      "case": "09-node-fetch-timeout",
+      "type": "breaking",
+      "investigation": "f9bff09c-dcbc-4ce2-98a5-9c9aec2d4fa9",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "node-fetch",
+          "kind": "breaking",
+          "status": "unresolved",
+          "priority": 0.605,
+          "sources": 2
+        }
+      ],
+      "expected_files": [
+        "src/client.js",
+        "src/status.js"
+      ],
+      "reported_files": [
+        "src/client.js",
+        "src/status.js",
+        "test/status.test.js"
+      ],
+      "files_true_positive": 2,
+      "fixable": true,
+      "repair": {
+        "status": "unresolved",
+        "attempts": 3,
+        "target": "3.3.2",
+        "note": "Still failing after 3 attempts. Last diagnosis: The timeout error detection in src/status.js line 9 checks `err.code === 'ABORT_ERR'`, but node-fetch 3.3.2 does not use a `code` property for timeout errors. Instead, timeout errors are AbortError instances with `err.name === 'AbortError'` and `err.cause.name === 'AbortError'` (or similar cause chain). The check for `err.code === 'ABORT_ERR'` will never match, causing timeout errors to fall through to the 'down' classification. This is why test/status.test.js:21 fails with \"Missing expected rejection\" (the timeout error is not being thrown as expected) and test/status.test.js:34 expects 'timeout' but gets 'ok' (the timeout is not being detected, so the request appears to succeed)."
+      },
+      "failed_attempts": 3,
+      "acceptance": "fail",
+      "repaired": false,
+      "test_runs": [
+        {
+          "label": "node-fetch:baseline",
+          "exit_code": 0,
+          "passed": 4,
+          "failed": 0
+        },
+        {
+          "label": "node-fetch:after_upgrade",
+          "exit_code": 1,
+          "passed": 2,
+          "failed": 2
+        },
+        {
+          "label": "node-fetch:attempt_1",
+          "exit_code": 1,
+          "passed": 2,
+          "failed": 2
+        },
+        {
+          "label": "node-fetch:attempt_2",
+          "exit_code": 1,
+          "passed": 2,
+          "failed": 2
+        },
+        {
+          "label": "node-fetch:attempt_3",
+          "exit_code": 1,
+          "passed": 2,
+          "failed": 2
+        }
+      ],
+      "steps": 26,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 144053,
+      "llm_calls": 65,
+      "tokens": 348653,
+      "cost_usd": 0.4087
+    }
+  ]
+}
