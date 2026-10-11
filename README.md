@@ -58,16 +58,17 @@ The business plan (pricing, costs, revenue, runway) is built in cfo.ai from the 
 
 Nine small benchmark repositories with known answers, each checked against the real packages from npm: six breaking upgrades (chalk, node-fetch twice, marked, uuid, express), one advisory case (lodash), two controls. Each has a held-out acceptance test the agent never sees. See [bench/README.md](bench/README.md).
 
-One full run of the first eight on October 10, `claude-haiku`, local sandbox ([evidence/bench/dev-m5.json](evidence/bench/dev-m5.json)):
+Full run on October 11 on an EC2 `t3.large`, `claude-haiku`, project commands in Docker with no network for tests ([evidence/bench/server-v1-haiku.json](evidence/bench/server-v1-haiku.json)):
 
 | | |
 |---|---|
-| Verdicts correct | 7 of 8 |
-| Fixable cases repaired, acceptance test passing | 5 of 6, all on the first attempt |
+| Verdicts correct | 9 of 9 |
+| Fixable cases repaired, acceptance test passing | 7 of 7, all on the first attempt |
 | Controls correct | 2 of 2 |
-| Cost | $0.38 |
+| Affected files: recall / precision | 13 of 13 / 13 of 17 |
+| Duration, cost | 236 s, $0.80 |
 
-The miss was a registry outage during the chalk case, which the agent at that time reported as "no finding". That has been fixed, and the case was repaired on a rerun. These are development runs on one machine, not the final scored benchmark.
+The first full run, a day earlier, had 7 of 8 verdicts and 5 of 6 repairs, and the hardest case was unresolved on its first run. Two problems found through neatlogs were fixed in between; their before and after figures are in [hackathon.md](hackathon.md). Precision on affected files is the weak number: impact analysis flags some test files that do not need to change.
 
 ## Run it
 
@@ -123,7 +124,6 @@ Working today:
 Not built yet:
 
 - Opening a pull request on approval is written but has not been run against GitHub.
-- A run in the container sandbox: the code is written and unit-tested, but has only run in `local` mode.
 - A real failed-then-recovered repair. On the hardest benchmark case the agent tried three times and reported the finding unresolved; see [the report](evidence/reports/09-node-fetch-timeout-unresolved.md).
 
 Limits by design: npm only, no monorepos, direct dependencies only for breaking changes, public repositories only.

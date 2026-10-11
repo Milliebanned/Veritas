@@ -1,0 +1,111 @@
+{
+  "summary": {
+    "tag": "server-smoke",
+    "ran_at": "2026-10-11T13:12:38.178Z",
+    "model": "claude-haiku",
+    "node": "v24.21.0",
+    "sandbox": "docker",
+    "cases": 1,
+    "verdicts_correct": 1,
+    "evidence_backed_findings": [
+      1,
+      1
+    ],
+    "affected_file_precision": [
+      2,
+      2
+    ],
+    "affected_file_recall": [
+      2,
+      2
+    ],
+    "repair_success": [
+      1,
+      1
+    ],
+    "fixed_on_first_attempt": 1,
+    "recovery": [
+      0,
+      0
+    ],
+    "test_runs_completed": [
+      3,
+      3
+    ],
+    "false_positives_on_controls": [
+      0,
+      0
+    ],
+    "steps_run_more_than_once": 0,
+    "crashes": 0,
+    "total_duration_s": 40,
+    "llm_calls": 16,
+    "tokens": 130839,
+    "cost_usd": 0.1559
+  },
+  "results": [
+    {
+      "case": "05-express-removed-apis",
+      "type": "breaking",
+      "investigation": "5a6aa0fa-37eb-451b-a6c8-da1d106404c1",
+      "crashed": null,
+      "expected_verdict": "affected",
+      "verdict": "affected",
+      "verdict_correct": true,
+      "findings": [
+        {
+          "package": "express",
+          "kind": "breaking",
+          "status": "confirmed",
+          "priority": 0.665,
+          "sources": 3
+        }
+      ],
+      "expected_files": [
+        "src/app.js",
+        "src/routes/items.js"
+      ],
+      "reported_files": [
+        "src/app.js",
+        "src/routes/items.js"
+      ],
+      "files_true_positive": 2,
+      "fixable": true,
+      "repair": {
+        "status": "verified",
+        "attempts": 1,
+        "target": "5.3.0",
+        "note": "Verified on 5.3.0, branch veritas/express."
+      },
+      "failed_attempts": 0,
+      "acceptance": "pass",
+      "repaired": true,
+      "test_runs": [
+        {
+          "label": "express:baseline",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        },
+        {
+          "label": "express:after_upgrade",
+          "exit_code": 1,
+          "passed": 1,
+          "failed": 2
+        },
+        {
+          "label": "express:attempt_1",
+          "exit_code": 0,
+          "passed": 3,
+          "failed": 0
+        }
+      ],
+      "steps": 20,
+      "steps_run_more_than_once": 0,
+      "duration_ms": 40455,
+      "llm_calls": 16,
+      "tokens": 130839,
+      "cost_usd": 0.1559
+    }
+  ]
+}
