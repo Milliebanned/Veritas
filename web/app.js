@@ -10,7 +10,7 @@ const STATE_WORDS = {
   PLAN_REPAIR: 'Plan repairs', BASELINE: 'Prove the break', PATCH: 'Write the fix', TEST: 'Run the tests', DIAGNOSE: 'Diagnose a failure', VERIFY: 'Verify the fix', REPORT: 'Write the report', AWAITING_APPROVAL: 'Wait for approval',
 };
 const STATUS_WORDS = { confirmed: 'Confirmed', potential: 'Potential', unresolved: 'Unresolved', not_affected: 'Not affected' };
-const LOGO = '<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#43611b"/><path d="M9 10l7 13 7-13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const LOGO = '<span class="mark">V</span>';
 const GITHUB = '<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.33.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0z"/></svg>';
 let me = null;
 let timer = null;
@@ -35,12 +35,13 @@ async function api(path, options = {}) {
 function nav(inApp) {
   const links = inApp
     ? '<a class="on" href="#/app">Investigations</a><a href="#/">About</a>'
-    : '<a href="#watch">How it works</a><a href="#proof">Results</a><a href="#trust">Your access</a>';
+    : '<a href="#watch">Product</a><a href="#how">How it works</a><a href="#trust">Your access</a><a href="https://github.com/Milliebanned/Veritas" target="_blank" rel="noreferrer">GitHub</a>';
   const account = me?.signed_in && me.user ? `<span class="who">${me.user.avatar ? `<img src="${esc(me.user.avatar)}" alt="">` : ''}${esc(me.user.login)}</span>` : '';
   const action = !me?.signed_in
-    ? me?.mode === 'github' ? `<a class="btn dark" href="/auth/github">${GITHUB} Sign in</a>` : '<a class="btn" href="#/app">Open app</a>'
-    : inApp ? `<button class="btn ghost" id="signout">${me.mode === 'token' ? 'Lock' : 'Sign out'}</button>` : '<a class="btn" href="#/app">Open app</a>';
-  return `<nav class="pill"><a class="logo" href="#/">${LOGO}veritas</a><div class="links">${links}</div>${account}${me?.mode === 'open' && inApp ? '' : action}</nav>`;
+    ? me?.mode === 'github' ? '<a class="btn white" href="/auth/github">Sign in</a>' : '<a class="btn white" href="#/app">Open app</a>'
+    : inApp ? (me.mode === 'open' ? '' : `<button class="btn white" id="signout">${me.mode === 'token' ? 'Lock' : 'Sign out'}</button>`) : '<a class="btn white" href="#/app">Open app</a>';
+  const news = inApp ? '' : '<a class="news" href="#proof"><i>NEW</i>Benchmark published ›</a>';
+  return `<nav class="bar ${inApp ? 'fixed' : ''}"><a class="logo" href="#/">${LOGO}</a><div class="links">${links}</div><div class="right">${news}${account}${action}</div></nav>`;
 }
 
 function bindNav() {
@@ -52,10 +53,10 @@ async function landing() {
   const pub = await fetch('/api/public').then((r) => r.json()).catch(() => ({ benchmark: null }));
   const b = pub.benchmark;
   const primary = me?.signed_in
-    ? '<a class="btn big" href="#/app">Open your investigations <span class="arrow">→</span></a>'
+    ? '<a class="btn big" href="#/app">Open your investigations</a>'
     : me?.mode === 'github'
-      ? `<a class="btn big dark" href="/auth/github">${GITHUB} Sign in with GitHub</a>`
-      : '<a class="btn big" href="#/app">Try it <span class="arrow">→</span></a>';
+      ? `<a class="btn big" href="/auth/github">${GITHUB} Connect GitHub</a>`
+      : '<a class="btn big" href="#/app">Start an investigation</a>';
   const ICON = {
     eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
     lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
@@ -65,24 +66,30 @@ async function landing() {
     check: '<path d="M20 6L9 17l-5-5"/>',
   };
   const icon = (name) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</svg>`;
-  const tiles = [[4, 64, 60], [8.4, 71, 60], [0.3, 71, 56], [12.8, 71, 60], [4, 78.5, 60], [70, 62, 70], [70, 72, 70], [65.5, 81.5, 70], [76, 81.5, 70], [45.6, 80, 42], [50.4, 80, 42], [48, 86, 42]];
+  const roles = [
+    ['Impact analyst', 'Reads your code and says which call sites an upgrade breaks', ['Code graph', 'Verdicts']],
+    ['Repair engineer', 'Writes the smallest change that makes your tests pass again', ['Edits', 'Branch', 'Tests']],
+    ['Diagnostician', 'Reads a failed attempt and decides what to try next', ['Failures', 'Retry']],
+  ];
   app.innerHTML = `${nav(false)}
-    <section class="hero">
-      <div class="scene" id="scene"></div>
-      ${tiles.map(([x, y, size], n) => `<div class="tile-glass" style="left:${x > 40 && x < 60 ? x : x > 60 ? `calc(${x}% + ${(x - 60) * 1.2}vw)` : `${x}%`};top:${y}%;width:${size}px;height:${size}px;animation-delay:${(n * -0.9).toFixed(1)}s;animation-duration:${6 + (n % 4)}s"></div>`).join('')}
-      <div class="copy">
-        <h1>Dependency upgrades,<br><em>proven</em> before they ship.</h1>
-        <p class="lede">An agent that proves whether an upgrade breaks your code, then writes and tests the fix. You approve. It opens the pull request.</p>
-        <div class="cta">${primary}<a class="btn big ghost" href="#watch">Watch it work</a></div>
+    <section class="hero5">
+      <canvas id="orbit" aria-hidden="true"></canvas>
+      <div class="h-left">
+        <span class="tag">From alert to pull request</span>
+        <h1><b>AI dependency agent.</b><br>Built for proof.</h1>
+        <p class="lede">It reads what changed, proves what breaks and writes the tested fix, so your team doesn't have to.</p>
+        ${primary}
+        <div class="team"><span class="label">Your agent team</span>
+          <div class="stack" id="stack">${roles.map(([name, text, tags]) => `<div class="agent"><h3>${name}</h3><p>${text}</p><div class="tags">${tags.map((t) => `<span>${t}</span>`).join('')}</div></div>`).join('')}</div></div>
       </div>
-      <div class="fade"></div>
+      ${b ? `<div class="h-stats"><div><b>${b.verdicts_correct}/${b.cases}</b><span>Verdicts correct</span></div><div><b>${b.repair_success[0]}/${b.repair_success[1]}</b><span>Fixes verified</span></div><div><b>$${(b.cost_usd / b.cases).toFixed(2)}</b><span>Cost per repository</span></div></div>` : ''}
     </section>
 
-    <section class="section reveal" id="watch"><div class="wrap split">
+    <section class="section dark reveal" id="watch"><div class="wrap split">
       <div><span class="kicker">The agent at work</span><h2>One investigation, <em>start to finish</em></h2>
         <p class="sub">Thirteen stages, driven by plain code. A model makes the decisions inside three of them, and tests decide whether it was right.</p>
         <ul class="ticks"><li>${icon('check')}Every stage is journaled, so an interrupted run resumes where it stopped</li><li>${icon('check')}A failed fix is diagnosed from the real test output, reverted, and tried again</li><li>${icon('check')}Three attempts at most, then it reports the finding as unresolved</li></ul></div>
-      <div class="console"><div class="bar"><i></i><i></i><i></i><span>veritas · live</span></div><div class="lines" id="console"></div></div>
+      <div class="console"><div class="cbar"><i></i><i></i><i></i><span>veritas · live</span></div><div class="lines" id="console"></div></div>
     </div></section>
 
     ${b ? `<section class="section reveal" id="proof"><div class="wrap"><span class="kicker">Measured, not claimed</span><h2>Benchmarked against <em>known answers</em></h2>
@@ -124,14 +131,14 @@ async function landing() {
     <section class="section reveal"><div class="wrap"><div class="final"><h2>Stop reading alerts.<br>Start reviewing <em>proof</em>.</h2><p>Point Veritas at a repository and get back a tested fix, or an honest reason why not.</p><div class="cta">${primary}</div></div></div></section>
     <div class="wrap"><footer class="foot"><span>Veritas · Verified changes. Reliable software.</span><a href="https://github.com/Milliebanned/Veritas" target="_blank" rel="noreferrer">github.com/Milliebanned/Veritas</a></footer></div>`;
   bindNav();
-  const [{ startScene }, { startConsole, startReveal }] = await Promise.all([import('/scene.js'), import('/hero3d.js')]);
-  cleanup = [startScene(document.getElementById('scene')), startConsole(document.getElementById('console')), startReveal(app)];
+  const [{ startOrbit, startStack }, { startConsole, startReveal }] = await Promise.all([import('/orbit.js'), import('/hero3d.js')]);
+  cleanup = [startOrbit(document.getElementById('orbit')), startStack(document.getElementById('stack')), startConsole(document.getElementById('console')), startReveal(app)];
 }
 
 function gate(message) {
   app.innerHTML = `${nav(false)}<main class="gate-page"><div class="gate-card">
     ${me?.mode === 'github'
-      ? `<h1>Connect your GitHub</h1><p>Sign in to choose a repository. Veritas works on a private copy and pushes nothing until you approve a fix.</p><a class="btn big dark" href="/auth/github">${GITHUB} Sign in with GitHub</a><p class="small">You can revoke access at any time in your GitHub settings.</p>`
+      ? `<h1>Connect your GitHub</h1><p>Sign in to choose a repository. Veritas works on a private copy and pushes nothing until you approve a fix.</p><a class="btn big" href="/auth/github">${GITHUB} Sign in with GitHub</a><p class="small">You can revoke access at any time in your GitHub settings.</p>`
       : `<h1>Private preview</h1><p>Enter the access code you were given.</p><form id="gate"><input class="field" id="code" type="password" placeholder="Access code" autocomplete="off"><button class="btn big" type="submit">Continue</button></form>`}
     <p class="error">${esc(message ?? '')}</p></div></main>`;
   bindNav();

@@ -149,7 +149,7 @@ export function startConsole(el) {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const line = (kind, tag) => {
     const row = document.createElement('div');
-    row.className = `cl ${kind}`;
+    row.className = `cl k-${kind}`;
     row.innerHTML = kind === 'cmd' ? '<span class="prompt">$</span><span class="text"></span><span class="caret"></span>' : `<span class="tag">${tag}</span><span class="text"></span>`;
     el.appendChild(row);
     return row;
@@ -185,7 +185,7 @@ export function startReveal(root) {
         const target = Number(el.dataset.count), prefix = el.dataset.prefix ?? '', suffix = el.dataset.suffix ?? '', decimals = Number(el.dataset.decimals ?? 0);
         const start = performance.now();
         const tick = (now) => {
-          const k = Math.min(1, (now - start) / 1100), eased = 1 - (1 - k) ** 3;
+          const k = Math.max(0, Math.min(1, (now - start) / 1100)), eased = 1 - (1 - k) ** 3;
           el.textContent = `${prefix}${(target * eased).toFixed(decimals)}${suffix}`;
           if (k < 1) requestAnimationFrame(tick);
         };
