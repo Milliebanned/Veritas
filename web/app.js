@@ -33,7 +33,7 @@ async function api(path, options = {}) {
 
 function nav(inApp) {
   const right = me?.signed_in
-    ? `${me.user ? `<span class="who">${me.user.avatar ? `<img src="${esc(me.user.avatar)}" alt="">` : ''}${esc(me.user.login)}</span><button class="btn ghost" id="signout">Sign out</button>` : '<button class="btn ghost" id="signout">Lock</button>'}`
+    ? `${me.user ? `<span class="who">${me.user.avatar ? `<img src="${esc(me.user.avatar)}" alt="">` : ''}${esc(me.user.login)}</span><button class="btn ghost" id="signout">Sign out</button>` : me.mode === 'token' ? '<button class="btn ghost" id="signout">Lock</button>' : ''}`
     : '';
   return `<nav class="nav"><a class="logo" href="#/">${LOGO}Veritas</a>
     <div class="links">${inApp ? '<a href="#/app">Investigations</a>' : '<a href="#how">How it works</a><a href="#proof">Results</a><a href="#tools">Built with</a>'}<a href="https://github.com/Milliebanned/Veritas" target="_blank" rel="noreferrer">GitHub</a></div>
