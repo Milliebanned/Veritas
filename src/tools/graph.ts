@@ -133,7 +133,8 @@ export async function graphRecordBaseline(repoDir: string, testCommand: string, 
 export async function graphVerify(repoDir: string, testCommand: string, baselinePath: string, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Verdict> {
   const out = await runVerify(repoDir, ['--test', testCommand, '--pre-edit-baseline', baselinePath], env, timeoutMs);
   const verdict = out.split('\n').find((line) => line.startsWith('VERDICT:')) ?? out.split('\n')[0] ?? '';
-  return { verdict, passed: /^VERDICT:\s*PASS/.test(verdict), detail: out.trim().slice(0, 2000) };
+  // The verdict is a delta against the baseline: FAIL means something that passed now fails. PASS and NO EFFECT both mean nothing regressed.
+  return { verdict, passed: !/^VERDICT:\s*FAIL/.test(verdict), detail: out.trim().slice(0, 2000) };
 }
 
 function runVerify(repoDir: string, args: string[], env: NodeJS.ProcessEnv, timeoutMs: number): Promise<string> {

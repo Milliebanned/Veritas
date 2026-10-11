@@ -304,6 +304,11 @@ describe('verification rules', () => {
     expect(v.checks.find((c) => !c.ok)?.detail).toBe('Fewer tests pass now (3) than before the upgrade (5).');
   });
 
+  it('accepts the graph verdict NO EFFECT, which means the tests behave as they did before the upgrade', () => {
+    const noEffect = { verdict: 'VERDICT: NO EFFECT — the target tests behave exactly as before your edit.', passed: true, detail: '' };
+    expect(checkVerification({ ...base, judgeVerdict: noEffect }).verified).toBe(true);
+  });
+
   it('rejects a fix the graph judges as failing, or one with no passing baseline', () => {
     expect(checkVerification({ ...base, judgeVerdict: { verdict: 'VERDICT: FAIL (exit 1)', passed: false, detail: '' } }).verified).toBe(false);
     expect(checkVerification({ ...base, baseline: undefined }).verified).toBe(false);

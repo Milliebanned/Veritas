@@ -125,6 +125,7 @@ export function checkVerification(input: {
   if (!countsKnown) caveats.push('Per-test comparison was not possible: the test runner output has no recognised summary.');
 
   if (input.judgeVerdict) {
+    // The project's own test run above is the source of truth. The graph's verdict can only add a failure, never excuse one.
     checks.push({ name: 'graph_verdict', ok: input.judgeVerdict.passed, detail: `entire graph verify: ${input.judgeVerdict.verdict}` });
     if (/exit-code only/i.test(input.judgeVerdict.detail)) caveats.push('entire graph verify could not read test names from this runner, so its verdict is pass or fail only.');
   } else {
