@@ -1,0 +1,12 @@
+{
+  "name": "status-poller",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Polls service status endpoints with a time limit",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "node-fetch": "2.7.0"
+  }
+}

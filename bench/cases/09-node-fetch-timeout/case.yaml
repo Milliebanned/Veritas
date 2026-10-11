@@ -1,0 +1,24 @@
+id: 09-node-fetch-timeout
+title: node-fetch 2 to 3 where the project relies on the removed `timeout` option and on its error type
+type: breaking
+package: node-fetch
+from: 2.7.0
+to: 3.3.2
+test_command: npm test
+# Where the change is documented. Each quote was read from the page on 2026-10-10.
+sources:
+  - url: https://github.com/node-fetch/node-fetch/releases/tag/v3.0.0
+    quote: "One major change is that it's now a ESM only package"
+  - url: https://github.com/node-fetch/node-fetch/blob/main/docs/v3-UPGRADE-GUIDE.md
+    quote: "The `timeout` option was removed. Since this was never part of the fetch specification, it was removed. AbortSignal offers more fine grained control of request timeouts"
+advisories: []
+# Three changes are needed, and each one only shows once the one before it is fixed:
+# the import (ESM-only), the removed `timeout` option, and the error raised on a timeout,
+# which is no longer `type: 'request-timeout'`.
+expected:
+  verdict: affected
+  finding_kind: breaking
+  fixable: true
+  affected_files:
+    - src/client.js
+    - src/status.js
