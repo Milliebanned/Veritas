@@ -67,6 +67,76 @@ export interface PatchResult {
   promptVersion: string;
 }
 
+export interface Check {
+  name: 'baseline_passed' | 'failure_reproduced' | 'tests_pass_now' | 'no_regression' | 'graph_verdict';
+  ok: boolean;
+  detail: string;
+}
+
+export interface Verification {
+  verified: boolean;
+  checks: Check[];
+  /** Things that do not block verification but that a reviewer should know. */
+  caveats: string[];
+}
+
+interface RunCounts {
+  exit_code: number | null;
+  passed: number | null;
+  failed: number | null;
+}
+
+/**
+ * The rules a repair must meet before it is called verified (plan section 15):
+ * the tests passed before the upgrade, the failure was reproduced when code had to change,
+ * the tests pass now, and nothing that passed before fails now.
+ */
+export function checkVerification(input: {
+  baseline: RunCounts | undefined;
+  afterUpgrade: RunCounts | undefined;
+  last: RunCounts | undefined;
+  codeChanged: boolean;
+  judgeVerdict: Verdict | null;
+  changedFiles: string[];
+  flaggedFiles: string[];
+}): Verification {
+  const { baseline, afterUpgrade, last } = input;
+  const checks: Check[] = [];
+  const caveats: string[] = [];
+
+  checks.push({ name: 'baseline_passed', ok: baseline?.exit_code === 0, detail: baseline?.exit_code === 0 ? 'Tests passed before the upgrade.' : 'There is no passing test run from before the upgrade.' });
+  if (input.codeChanged) {
+    const reproduced = afterUpgrade !== undefined && afterUpgrade.exit_code !== 0;
+    checks.push({ name: 'failure_reproduced', ok: reproduced, detail: reproduced ? 'Tests failed after the upgrade and before the fix.' : 'The failure was not reproduced before the code was changed.' });
+  }
+  checks.push({ name: 'tests_pass_now', ok: last?.exit_code === 0, detail: last?.exit_code === 0 ? 'Tests pass with the fix.' : 'The latest test run did not pass.' });
+
+  const countsKnown = baseline?.passed != null && last?.passed != null;
+  const fewer = countsKnown && (last!.passed! < baseline!.passed! || (last!.failed ?? 0) > 0);
+  checks.push({
+    name: 'no_regression',
+    ok: !fewer,
+    detail: fewer
+      ? `Fewer tests pass now (${last!.passed}) than before the upgrade (${baseline!.passed}).`
+      : countsKnown
+        ? `As many tests pass now (${last!.passed}) as before the upgrade (${baseline!.passed}).`
+        : 'Test counts could not be read from the runner output; the exit code is the only signal.',
+  });
+  if (!countsKnown) caveats.push('Per-test comparison was not possible: the test runner output has no recognised summary.');
+
+  if (input.judgeVerdict) {
+    checks.push({ name: 'graph_verdict', ok: input.judgeVerdict.passed, detail: `entire graph verify: ${input.judgeVerdict.verdict}` });
+    if (/exit-code only/i.test(input.judgeVerdict.detail)) caveats.push('entire graph verify could not read test names from this runner, so its verdict is pass or fail only.');
+  } else {
+    caveats.push('entire graph verify was not available for this run.');
+  }
+
+  const outside = input.changedFiles.filter((f) => !input.flaggedFiles.includes(f));
+  if (outside.length) caveats.push(`The fix also changed ${outside.join(', ')}, which impact analysis had not flagged.`);
+
+  return { verified: checks.every((c) => c.ok), checks, caveats };
+}
+
 interface StepOutcome {
   ok: boolean;
   run?: TestRun;
@@ -408,15 +478,41 @@ export function createRepairHandlers(deps: RepairDeps = {}): Record<'PLAN_REPAIR
     const repair = records.currentRepair(ctx.investigationId);
     if (!repair) return 'PLAN_REPAIR';
     const { all, primary } = findingsOf(records, ctx, repair);
-    await ctx.step('verify', { repair: repair.id, attempt: repair.attempts }, () => {
-      if (repair.attempts > 0) records.saveAttempt(primary.id, repair.attempts, { outcome: 'tests_passed' });
-      const how = repair.attempts > 0 ? `a code change (attempt ${repair.attempts})` : 'the version upgrade alone';
-      for (const f of all) {
-        if (f.kind === 'advisory' || f.status === 'confirmed') records.setFindingStatus(f.id, 'confirmed', { note: `Tests pass on ${repair.package} ${repair.target_version} with ${how}.` });
-      }
-      return { repair: repair.id, attempts: repair.attempts };
-    });
-    endRepair(records, ctx, repair, 'verified', `Tests pass on ${repair.target_version} on branch ${repair.branch}.`);
+    const verification = await ctx.step('verify', { repair: repair.id, attempt: repair.attempts }, () =>
+      traced('eval.verification', 'EVALUATOR', { package: repair.package, attempt: repair.attempts }, (set): Verification => {
+        const runs = records.testRuns(ctx.investigationId);
+        const run = (label: string) => runs.find((r) => r.label === `${repair.package}:${label}`);
+        const lastLabel = repair.attempts > 0 ? `attempt_${repair.attempts}` : 'after_upgrade';
+        const judged = ctx.journal.output<StepOutcome>(ctx.investigationId, repair.attempts > 0 ? 'TEST' : 'BASELINE', repair.attempts > 0 ? 'test' : 'test_after_upgrade')?.verdict;
+        const patched = repair.attempts > 0 ? ctx.journal.output<PatchResult>(ctx.investigationId, 'PATCH', 'patch') : undefined;
+        const flagged = new Set(records.affectedSites(ctx.investigationId).filter((s) => findingIds(repair).includes(s.finding_id)).map((s) => s.file));
+        const result = checkVerification({
+          baseline: run('baseline'),
+          afterUpgrade: run('after_upgrade'),
+          last: run(lastLabel),
+          codeChanged: repair.attempts > 0,
+          judgeVerdict: judged && 'verdict' in judged ? judged : null,
+          changedFiles: (patched?.files ?? []).filter((f) => f !== 'package.json' && f !== 'package-lock.json'),
+          flaggedFiles: [...flagged],
+        });
+        set({ verified: result.verified, checks_failed: result.checks.filter((c) => !c.ok).length, caveats: result.caveats.length });
+        return result;
+      }),
+    );
+
+    if (!verification.verified) {
+      const failed = verification.checks.filter((c) => !c.ok).map((c) => c.detail).join(' ');
+      for (const f of all) records.setFindingStatus(f.id, 'unresolved', { note: `Tests pass, but the fix did not meet the verification rules: ${failed}` });
+      endRepair(records, ctx, repair, 'unresolved', `Not verified: ${failed}`);
+      return 'PLAN_REPAIR';
+    }
+    if (repair.attempts > 0) records.saveAttempt(primary.id, repair.attempts, { outcome: 'tests_passed' });
+    const how = repair.attempts > 0 ? `a code change (attempt ${repair.attempts})` : 'the version upgrade alone';
+    for (const f of all) {
+      if (f.kind === 'advisory' || f.status === 'confirmed') records.setFindingStatus(f.id, 'confirmed', { note: `Verified: tests pass on ${repair.package} ${repair.target_version} with ${how}.` });
+    }
+    const caveats = verification.caveats.length ? ` Note: ${verification.caveats.join(' ')}` : '';
+    endRepair(records, ctx, repair, 'verified', `Verified on ${repair.target_version}, branch ${repair.branch}.${caveats}`);
     return 'PLAN_REPAIR';
   };
 

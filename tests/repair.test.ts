@@ -1,16 +1,17 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { ChatCompletionMessage } from 'openai/resources/chat/completions';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createHandlers, stubHandlers } from '../src/agent/handlers.ts';
+import { createHandlers } from '../src/agent/handlers.ts';
 import type { ImpactProvider } from '../src/agent/impact.ts';
 import { repoDir } from '../src/agent/intake.ts';
 import { realTools, type IntelTools } from '../src/agent/intel.ts';
 import { loadLimits } from '../src/agent/limits.ts';
 import { Orchestrator } from '../src/agent/orchestrator.ts';
-import type { Judge } from '../src/agent/repair.ts';
+import { checkVerification, type Judge } from '../src/agent/repair.ts';
+import { buildReport, renderMarkdown } from '../src/agent/report.ts';
 import type { Chat, ChatRequest } from '../src/llm/client.ts';
 import { openDb } from '../src/state/db.ts';
 import { Records } from '../src/state/records.ts';
@@ -174,7 +175,11 @@ function simulatedSandbox(log: string[]): Sandbox {
 
 const judge: Judge = {
   recordBaseline: async () => 'BASELINE RECORDED',
-  verify: async () => ({ verdict: 'VERDICT: FAIL (exit 1)', passed: false, detail: '' }),
+  // Agrees with the simulated project: failing while upgraded and unfixed, passing otherwise.
+  verify: async (dir) => {
+    const broken = existsSync(join(dir, 'UPGRADED')) && !readFileSync(join(dir, 'src/render.js'), 'utf8').includes("const { marked } = require('marked')");
+    return broken ? { verdict: 'VERDICT: FAIL (exit 1)', passed: false, detail: '' } : { verdict: 'VERDICT: PASS (exit 0)', passed: true, detail: '' };
+  },
   explain: async () => 'DECLARATIONS: renderNote (src/render.js:3)',
   diff: async () => [{ file: 'src/render.js', type: 'body_changed', kind: 'function', name: 'renderNote', dependents: 1 }],
 };
@@ -195,10 +200,10 @@ const diagnosis = (fixable = true) => ({ name: 'submit_diagnosis', args: { cause
 
 async function investigate(chat: Chat, log: string[] = [], maxAttempts = 3) {
   const db = openDb(':memory:');
-  const handlers = { ...createHandlers(tools, { chat, provider, sandbox: simulatedSandbox(log), judge }), REPORT: stubHandlers.REPORT };
+  const handlers = createHandlers(tools, { chat, provider, sandbox: simulatedSandbox(log), judge });
   const orchestrator = new Orchestrator({ db, handlers, limits: { ...loadLimits(), maxAttempts } });
   const inv = await orchestrator.run(orchestrator.start('bench/cases/03-marked-default-export/repo').id);
-  return { inv, records: new Records(db), dir: repoDir(inv.id) };
+  return { inv, db, records: new Records(db), dir: repoDir(inv.id) };
 }
 const gitIn = (dir: string, ...args: string[]) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim();
 
@@ -272,5 +277,92 @@ describe('repair states', () => {
     expect(replies[1]).toContain('No file has been edited yet');
     expect(records.repairs(inv.id)).toMatchObject([{ status: 'verified', attempts: 1 }]);
     expect(gitIn(dir, 'diff', '--name-only', String(inv.commit_sha), 'veritas/marked')).not.toContain('test/');
+  });
+});
+
+describe('verification rules', () => {
+  const pass = { exit_code: 0, passed: 5, failed: 0 };
+  const fail = { exit_code: 1, passed: 1, failed: 4 };
+  const ok = { verdict: 'VERDICT: PASS (exit 0)', passed: true, detail: '' };
+  const base = { baseline: pass, afterUpgrade: fail, last: pass, codeChanged: true, judgeVerdict: ok, changedFiles: ['src/render.js'], flaggedFiles: ['src/render.js'] };
+
+  it('verifies a fix that was reproduced, passes now, and loses no tests', () => {
+    const v = checkVerification(base);
+    expect(v).toMatchObject({ verified: true, caveats: [] });
+    expect(v.checks.map((c) => [c.name, c.ok])).toEqual([['baseline_passed', true], ['failure_reproduced', true], ['tests_pass_now', true], ['no_regression', true], ['graph_verdict', true]]);
+  });
+
+  it('rejects a fix when the failure was never reproduced', () => {
+    const v = checkVerification({ ...base, afterUpgrade: pass });
+    expect(v.verified).toBe(false);
+    expect(v.checks.find((c) => !c.ok)?.name).toBe('failure_reproduced');
+  });
+
+  it('rejects a fix that passes with fewer tests than before', () => {
+    const v = checkVerification({ ...base, last: { exit_code: 0, passed: 3, failed: 0 } });
+    expect(v.verified).toBe(false);
+    expect(v.checks.find((c) => !c.ok)?.detail).toBe('Fewer tests pass now (3) than before the upgrade (5).');
+  });
+
+  it('rejects a fix the graph judges as failing, or one with no passing baseline', () => {
+    expect(checkVerification({ ...base, judgeVerdict: { verdict: 'VERDICT: FAIL (exit 1)', passed: false, detail: '' } }).verified).toBe(false);
+    expect(checkVerification({ ...base, baseline: undefined }).verified).toBe(false);
+    expect(checkVerification({ ...base, last: fail }).verified).toBe(false);
+  });
+
+  it('accepts an upgrade that needs no code change without asking for a reproduced failure', () => {
+    const v = checkVerification({ ...base, afterUpgrade: pass, codeChanged: false, changedFiles: [] });
+    expect(v.verified).toBe(true);
+    expect(v.checks.map((c) => c.name)).not.toContain('failure_reproduced');
+  });
+
+  it('verifies with caveats when counts are unreadable, the judge is missing, or extra files changed', () => {
+    const unknown = { exit_code: 0, passed: null, failed: null };
+    const v = checkVerification({ ...base, baseline: unknown, last: unknown, judgeVerdict: null, changedFiles: ['src/render.js', 'src/outline.js'] });
+    expect(v.verified).toBe(true);
+    expect(v.caveats).toEqual([
+      'Per-test comparison was not possible: the test runner output has no recognised summary.',
+      'entire graph verify was not available for this run.',
+      'The fix also changed src/outline.js, which impact analysis had not flagged.',
+    ]);
+  });
+});
+
+describe('report', () => {
+  it('reports a verified fix with its proof, diff and remaining risk', async () => {
+    const { inv, db } = await investigate(scriptedChat([impact, [goodEdit], [submit('Use the named export.')]]));
+    const report = buildReport(db, inv.id);
+
+    expect(report).toMatchObject({ verdict: 'fixes_ready', headline: '1 verified fix ready for review (marked).', counts: { findings: 1, verified: 1, unresolved: 0, unchecked: 0 } });
+    expect(report.repairs[0]).toMatchObject({ package: 'marked', status: 'verified', files_changed: expect.arrayContaining(['src/render.js']), functions_changed: ['renderNote (src/render.js)'] });
+    expect(report.repairs[0]?.test_runs.map((t) => [t.label, t.exit_code])).toEqual([['baseline', 0], ['after_upgrade', 1], ['attempt_1', 0]]);
+    expect(report.repairs[0]?.verification?.verified).toBe(true);
+    expect(report.findings[0]?.sources.every((s) => s.read_from_source)).toBe(true);
+    expect(report.remaining_risk[0]).toBe("marked: verified by the project's own tests only. Behaviour the tests do not cover was not checked.");
+
+    const markdown = renderMarkdown(report);
+    expect(markdown).toContain('**1 verified fix ready for review (marked).**');
+    expect(markdown).toContain('| after upgrade | fail | 1 | 4 |');
+    expect(markdown).toContain('- Passed: Tests failed after the upgrade and before the fix.');
+    expect(markdown).toContain("+const { marked } = require('marked');");
+    expect(db.prepare('SELECT verdict FROM reports WHERE investigation_id = ?').get(inv.id)).toEqual({ verdict: 'fixes_ready' });
+  });
+
+  it('shows a failed attempt, its diagnosis and the attempt that worked', async () => {
+    const chat = scriptedChat([impact, [wrongEdit], [submit('Call .default.')], [diagnosis()], [goodEdit], [submit('Destructure the named export.')]]);
+    const { inv, db } = await investigate(chat);
+    const markdown = renderMarkdown(buildReport(db, inv.id));
+    expect(markdown).toContain('### Attempt 1: tests failed');
+    expect(markdown).toContain('Diagnosis after the failure: marked has no default export');
+    expect(markdown).toContain('### Attempt 2: tests passed');
+  });
+
+  it('says so when nothing could be fixed', async () => {
+    const chat = scriptedChat([impact, [wrongEdit], [submit('one')], [diagnosis(false)]]);
+    const { inv, db } = await investigate(chat);
+    const report = buildReport(db, inv.id);
+    expect(report).toMatchObject({ verdict: 'needs_attention', headline: '1 finding unresolved.' });
+    expect(report.remaining_risk[0]).toContain('marked: no working fix was found.');
+    expect(report.repairs[0]?.files_changed).toEqual([]);
   });
 });

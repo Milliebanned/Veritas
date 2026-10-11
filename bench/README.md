@@ -1,6 +1,6 @@
 # Benchmark
 
-Eight small CommonJS projects with known answers. Veritas is scored on them before and after each improvement. They were written during the hackathon and every one is checked against the real packages from npm; nothing is simulated.
+Nine small CommonJS projects with known answers. Veritas is scored on them before and after each improvement. They were written during the hackathon and every one is checked against the real packages from npm; nothing is simulated.
 
 ## Layout of a case
 
@@ -36,7 +36,10 @@ Confirmed with `node bench/reproduce.mjs` on Node v24.20.0 (macOS arm64) on 2026
 | 7 | Control: express 5 removals, none used | express 4.22.3 → 5.3.0 | pass | pass | none | not needed |
 | 8 | Control: outdated only | semver 7.5.4 → 7.8.5 | pass | pass | none | not needed |
 
+| 9 | node-fetch removed the `timeout` option (and became ESM-only) | node-fetch 2.7.0 → 3.3.2 | pass | **fail** | `TypeError: fetch is not a function`, then two further failures once that is fixed | tests and acceptance pass |
+
 Notes:
+- **Case 9 was added on October 11 as a harder case.** It needs three changes in two files, and the second and third failures are hidden until the first is fixed. The package's upgrade guide documents the removed option; its release note does not.
 - **Case 6 is a real exposure.** On lodash 4.17.15, the project's `fromFlat({ '__proto__.x': true })` pollutes `Object.prototype` (GHSA-p6mc-m468-83gw). The acceptance test checks that it no longer does.
 - **Cases 3 and 4 also start on versions with published advisories** (marked: 2, uuid: 1). They are listed under `advisories` in `case.yaml`, so reporting them counts as correct.
 - **Case 3 has a decoy.** `src/outline.js` requires marked but only calls `marked.lexer`, which still works. Only `src/render.js` must change.

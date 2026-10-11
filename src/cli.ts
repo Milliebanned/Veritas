@@ -1,6 +1,7 @@
 #!/usr/bin/env -S npx tsx
 import { existsSync } from 'node:fs';
 import { handlers } from './agent/handlers.ts';
+import { buildReport, renderMarkdown } from './agent/report.ts';
 import { Orchestrator } from './agent/orchestrator.ts';
 import { usageFor } from './llm/client.ts';
 import { publishPrompts } from './llm/prompts.ts';
@@ -15,6 +16,7 @@ Usage:
   veritas investigate <repo-url-or-path>   Start a new investigation
   veritas resume <investigation-id>        Continue an interrupted investigation
   veritas status [investigation-id]        Show investigations, or the steps of one
+  veritas report <investigation-id>        Print the investigation's report
   veritas export <investigation-id>        Print dependencies, findings and sources as JSON
   veritas prompts publish [message]        Publish the checked-in prompts to neatlogs as the production version
 `;
@@ -34,6 +36,12 @@ async function main(): Promise<number> {
     if (!inv) return fail(`Unknown investigation ${arg}`);
     console.log(`${inv.id}  ${inv.status}  state=${inv.current_state}  repo=${inv.repo_url}`);
     console.table(journal.steps(arg).map(({ state, name, status, attempt, duration_ms, error }) => ({ state, name, status, attempt, duration_ms, error })));
+    return 0;
+  }
+
+  if (command === 'report') {
+    if (!arg || !journal.getInvestigation(arg)) return fail(`Unknown investigation ${arg ?? ''}`);
+    console.log(renderMarkdown(buildReport(db, arg)));
     return 0;
   }
 
