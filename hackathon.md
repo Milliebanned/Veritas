@@ -166,7 +166,7 @@ Entire check (end of this milestone): the code graph was used first to locate th
 - Cost per investigation is higher than on October 10 (about $0.09 to $0.16 for a breaking case, from about $0.05 to $0.14), partly from the longer upgrade-guide sources.
 - The web app is running on the server at http://3.88.235.251:3210, behind a shared access token.
 - Still not seen: a repair that fails its tests and then recovers. Every repair in this run succeeded on its first attempt.
-- Entire check: `entire graph stats` now reports 21 graph calls (8 credited lookups); the graph was used first for each code lookup in this milestone.
+- Entire check: `entire graph stats` now reports 22 graph calls (9 credited lookups) against 231 other search-and-read calls; the graph was used first for each code lookup in this milestone.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.
