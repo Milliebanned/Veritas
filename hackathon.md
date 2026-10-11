@@ -129,6 +129,21 @@ Entire check (end of this milestone): the code graph was used first to locate th
 - A bug found by that run, in the verification rule added earlier today: it rejected a good fix because `entire graph verify` answered "NO EFFECT — the target tests behave exactly as before your edit", and the code accepted only the word PASS. The unit tests had not caught it because their stand-in for the judge never returned that verdict. Fixed: only an explicit FAIL verdict blocks verification; a test covers NO EFFECT.
 - A limit of `entire graph verify` with Node's built-in test runner, found while checking that bug: it reads the output as Jest-style, and it answered NO EFFECT even for a run where two tests newly failed, both with and without test timings in the output. So for these projects its verdict cannot be relied on to catch a regression; the project's own test run remains the source of truth, as planned. Not yet reported to Entire.
 - Tests that ran: `npx vitest run` — 79 passed. `npx tsc --noEmit` clean.
+- Second improvement through neatlogs: the case 9 failure. neatlogs had flagged the run ("Execution Failed") on its own. neat AI was given the trace and the cause found in the record (no stored source mentioned the removed `timeout` option) and opened pull request #5 as `neatlogs[bot]`, adding `src/tools/upgradeGuides.ts`: it lists a package repository's files and fetches Markdown upgrade and migration guides. Follow-up commits on the same pull request wire it into the release-notes step, keep only guides for the major versions being crossed, and add tests.
+- The first rerun with that change did not succeed, and showed two further faults in the agent loop, both visible in the saved trace (`18937ea29f0a3f3ac0e3f48e0814a0af`): with the upgrade guide now in hand the repair agent knew what to do, but spent all 19 of its tool calls reading and searching, was then left with only the submit tool, submitted twice with nothing edited, and the investigation crashed. Fixed in the same pull request: the agent is told its tool budget and how many calls are left; the last 8 calls of a repair are reserved for editing; and an attempt that produces no edit is recorded as a failed attempt, which goes to diagnosis like any other, instead of ending the investigation.
+- Measured on case 9, same model (`claude-haiku`), one run each (`evidence/bench/m6-case09.json` before, `evidence/bench/after-neatlogs-fix-case09.json` after; reports in `evidence/reports/`):
+
+  | node-fetch 2 to 3, removed `timeout` option | Before | After |
+  |---|---|---|
+  | Outcome | unresolved after 3 attempts | verified on attempt 1 |
+  | Held-out acceptance test | fail | pass |
+  | Sources stored for the finding | 2 | 3, including the upgrade guide |
+  | Model calls | 65 | 22 |
+  | Cost | $0.41 | $0.18 |
+  | Duration | 144 s | 61 s |
+
+- Still true: no repair has yet failed its tests and then recovered. Case 9 went from never fixed to fixed first time.
+- Tests that ran: `npx vitest run` — 84 passed. `npx tsc --noEmit` clean.
 
 Open problem (neatlogs platform, 2026-10-10):
 - Traces sent after 12:53 UTC are accepted by neatlogs but never finish processing: the MCP server reports `status: processing`, `finalization_status: pending`, `span_count: 0` for all of them, including a two-span test trace. Only the first two traces of the day are readable.

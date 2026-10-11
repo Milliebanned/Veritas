@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { createChat, type Chat } from '../llm/client.ts';
-import { runToolLoop, type LoopTool } from '../llm/loop.ts';
+import { LoopFailed, runToolLoop, type LoopTool } from '../llm/loop.ts';
 import { loadPrompt, type PromptName } from '../llm/prompts.ts';
 import { guarded, note, traced, type SetAttrs } from '../observability/neatlogs.ts';
 import { Records, type FindingRecord, type RepairRecord } from '../state/records.ts';
@@ -410,6 +410,12 @@ export function createRepairHandlers(deps: RepairDeps = {}): Record<'PLAN_REPAIR
             },
           },
           maxToolCalls: ctx.limits.maxToolCallsPerStep + 8,
+          reserve: { calls: 8, tools: ['apply_edit'] },
+        }).catch((err: unknown) => {
+          // A model that never produced an edit has failed this attempt; it has not broken the investigation.
+          if (!(err instanceof LoopFailed)) throw err;
+          note('attempt {n} for {package} produced no change: {reason}', { n, package: repair.package, reason: err.message, level: 'warn' });
+          return { result: { plan: `No change was produced. ${err.message}`, files_changed: [] }, toolCalls: [], turns: 0, costUsd: 0 };
         });
         const commit = commitAll(dir, `Adapt to ${repair.package} ${repair.target_version} (attempt ${n})`);
         const files = changedFiles(dir, repair.bump_commit!);

@@ -27,6 +27,11 @@ export interface LoopOptions<T> {
   submit: SubmitTool<T>;
   /** Upper bound on tool calls, the final submission included. */
   maxToolCalls: number;
+  /**
+   * Keeps the last `calls` tool calls for the tools that produce the result (for a repair, the
+   * edit tool). Without it a model can spend its whole budget reading and have none left to act.
+   */
+  reserve?: { calls: number; tools: string[] };
 }
 
 export interface ToolCallRecord {
@@ -61,9 +66,12 @@ const asTool = (t: { name: string; description: string; parameters: Record<strin
  * left is submit. A submission that fails validation is returned to the model once with the error.
  */
 export async function runToolLoop<T>(opts: LoopOptions<T>): Promise<LoopResult<T>> {
+  const budget = opts.reserve
+    ? `You have ${opts.maxToolCalls} tool calls in total, counting the final ${opts.submit.name}. The last ${opts.reserve.calls} can only be ${opts.reserve.tools.join(' or ')} and ${opts.submit.name}, so do your reading first and leave room to act.`
+    : `You have ${opts.maxToolCalls} tool calls in total, counting the final ${opts.submit.name}.`;
   const messages: ChatCompletionMessageParam[] = [
     { role: 'system', content: opts.system },
-    { role: 'user', content: opts.user },
+    { role: 'user', content: `${opts.user}\n\n${budget}` },
   ];
   const all = [...opts.tools.map(asTool), asTool(opts.submit)];
   const toolCalls: ToolCallRecord[] = [];
@@ -71,11 +79,14 @@ export async function runToolLoop<T>(opts: LoopOptions<T>): Promise<LoopResult<T
   let costUsd = 0;
 
   for (let turn = 1; turn <= opts.maxToolCalls + 2; turn++) {
-    const mustSubmit = toolCalls.length >= opts.maxToolCalls - 1;
+    const remaining = opts.maxToolCalls - toolCalls.length;
+    const mustSubmit = remaining <= 1;
+    const reserved = !mustSubmit && opts.reserve !== undefined && remaining <= opts.reserve.calls;
+    const allowed = reserved ? new Set(opts.reserve!.tools) : null;
     const { message, costUsd: cost } = await opts.chat(
       {
         messages,
-        tools: mustSubmit ? [asTool(opts.submit)] : all,
+        tools: mustSubmit ? [asTool(opts.submit)] : allowed ? [...opts.tools.filter((t) => allowed.has(t.name)).map(asTool), asTool(opts.submit)] : all,
         toolChoice: mustSubmit ? { type: 'function', function: { name: opts.submit.name } } : 'required',
       },
       opts.ctx,
@@ -114,15 +125,17 @@ export async function runToolLoop<T>(opts: LoopOptions<T>): Promise<LoopResult<T
       }
 
       const tool = opts.tools.find((t) => t.name === call.function.name);
-      if (!tool || mustSubmit) {
+      if (!tool || mustSubmit || (allowed && !allowed.has(tool.name))) {
         toolCalls.push({ name: call.function.name, args, ok: false });
-        reply(tool ? `Error: no tool calls are left. Call ${opts.submit.name} now.` : `Error: unknown tool ${call.function.name}.`);
+        reply(!tool ? `Error: unknown tool ${call.function.name}.` : mustSubmit ? `Error: no tool calls are left. Call ${opts.submit.name} now.` : `Error: ${tool.name} is no longer available. Only ${[...allowed!].join(', ')} and ${opts.submit.name} are left.`);
         continue;
       }
       try {
         const output = await traced(`tool.${tool.name}`, 'TOOL', { tool: tool.name }, () => tool.run(args), args);
         toolCalls.push({ name: tool.name, args, ok: true });
-        reply(output.length > MAX_TOOL_OUTPUT ? `${output.slice(0, MAX_TOOL_OUTPUT)}\n[truncated]` : output);
+        const left = opts.maxToolCalls - toolCalls.length;
+        const warning = left <= 6 ? `\n[${left} tool call${left === 1 ? '' : 's'} left]` : '';
+        reply((output.length > MAX_TOOL_OUTPUT ? `${output.slice(0, MAX_TOOL_OUTPUT)}\n[truncated]` : output) + warning);
       } catch (err) {
         toolCalls.push({ name: tool.name, args, ok: false });
         reply(`Error: ${(err as Error).message}`);
