@@ -1,5 +1,6 @@
 import { githubGet, httpGet, HttpError, type HttpGet } from './http.ts';
 import type { GithubRepo } from './npmRegistry.ts';
+import { findUpgradeGuides } from './upgradeGuides.ts';
 
 export interface ReleaseNote {
   version: string;
@@ -187,5 +188,30 @@ export async function fetchReleaseNotes(repo: GithubRepo, versions: string[], ht
       notes.push({ version, url: changelog.url, kind: 'changelog', excerpt: breakingExcerpt(section), publishedAt: null });
     }
   }
+
+  // Upgrade guides kept as files in the repository. A release note can be two lines long and
+  // leave the removed options to a guide it never links to by that name.
+  const seen = new Set(notes.map((n) => n.url));
+  const guides = await findUpgradeGuides(repo.owner, repo.repo, (url) => githubGet(url, http));
+  for (const guide of pickGuides(guides, versions).filter((g) => !seen.has(g.url))) {
+    notes.push({ version: guide.version, url: guide.url, kind: 'migration_guide', excerpt: guide.text.trim().slice(0, MAX_GUIDE_CHARS), publishedAt: null });
+  }
   return notes;
+}
+
+/**
+ * Keeps the guides that concern the majors being crossed. A guide whose path names a major
+ * (`v3-UPGRADE-GUIDE.md`) is kept only for that major; one without a number applies to all.
+ */
+export function pickGuides(guides: { url: string; text: string }[], versions: string[], max = 2): { url: string; text: string; version: string }[] {
+  const majors = new Map(versions.map((v) => [v.split('.')[0]!, v]));
+  const latest = versions.at(-1) ?? '';
+  const picked: { url: string; text: string; version: string }[] = [];
+  for (const guide of guides) {
+    const named = /(?:^|[^\d.])v?(\d+)(?:\.x)?[^\d]*(?:upgrad|migrat)|(?:upgrad|migrat)[^\d]*?v?(\d+)/i.exec(guide.url.split('/blob/HEAD/')[1] ?? '');
+    const major = named?.[1] ?? named?.[2];
+    if (major && !majors.has(major)) continue;
+    picked.push({ ...guide, version: major ? majors.get(major)! : latest });
+  }
+  return picked.slice(0, max);
 }

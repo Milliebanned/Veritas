@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseAdvisories } from '../src/tools/advisories.ts';
-import { breakingExcerpt, extractChangelogSection, fetchReleaseNotes, findGuideLinks, htmlToText, parseReleases } from '../src/tools/githubReleases.ts';
+import { breakingExcerpt, extractChangelogSection, fetchReleaseNotes, findGuideLinks, htmlToText, parseReleases, pickGuides } from '../src/tools/githubReleases.ts';
+import { findUpgradeGuides } from '../src/tools/upgradeGuides.ts';
 import { githubGet, httpGet, type HttpGet } from '../src/tools/http.ts';
 import { parseInventory, readInventory } from '../src/tools/manifest.ts';
 import { parseNpmAudit } from '../src/tools/npmCli.ts';
@@ -180,11 +181,52 @@ describe('release notes', () => {
     const http: HttpGet = async (url) => {
       seen.push(url);
       if (url.includes('/releases?')) return { status: 200, text: JSON.stringify([{ tag_name: 'v2.0.0', html_url: 'https://github.com/o/r/releases/tag/v2.0.0', body: '[upgrade](https://169.254.169.254/latest) [migrate](https://localhost/x)' }]) };
-      return { status: 200, text: 'removed things' };
+      return url.includes('/git/trees/') ? { status: 200, text: JSON.stringify({ tree: [] }) } : { status: 200, text: 'removed things' };
     };
     const notes = await fetchReleaseNotes({ owner: 'o', repo: 'r' }, ['2.0.0'], http);
     expect(notes.map((n) => n.kind)).toEqual(['release_notes']);
-    expect(seen).toHaveLength(1);
+    // Only GitHub's own API was contacted: the releases list and the repository file list.
+    expect(seen.every((url) => url.startsWith('https://api.github.com/'))).toBe(true);
+  });
+
+  it('finds upgrade guides kept as files in the repository', async () => {
+    const tree = { tree: [{ path: 'README.md', type: 'blob' }, { path: 'docs/v3-UPGRADE-GUIDE.md', type: 'blob' }, { path: 'docs/v2-UPGRADE-GUIDE.md', type: 'blob' }, { path: 'src/migrate.js', type: 'blob' }, { path: 'MIGRATION.md', type: 'blob' }] };
+    const seen: string[] = [];
+    const get = async (url: string) => {
+      seen.push(url);
+      if (url.includes('/git/trees/')) return { status: 200, text: JSON.stringify(tree) };
+      return url.endsWith('v2-UPGRADE-GUIDE.md') ? { status: 404, text: '' } : { status: 200, text: `guide at ${url.split('/HEAD/')[1]}` };
+    };
+    const guides = await findUpgradeGuides('o', 'r', get);
+    expect(guides).toEqual([
+      { url: 'https://github.com/o/r/blob/HEAD/MIGRATION.md', text: 'guide at MIGRATION.md' },
+      { url: 'https://github.com/o/r/blob/HEAD/docs/v3-UPGRADE-GUIDE.md', text: 'guide at docs/v3-UPGRADE-GUIDE.md' },
+    ]);
+    expect(seen.some((u) => u.endsWith('src/migrate.js'))).toBe(false);
+    expect(await findUpgradeGuides('o', 'r', async () => { throw new Error('offline'); })).toEqual([]);
+    expect(await findUpgradeGuides('o', 'r', async () => ({ status: 404, text: '' }))).toEqual([]);
+  });
+
+  it('keeps only the guides for the majors being crossed', () => {
+    const guides = ['docs/v2-UPGRADE-GUIDE.md', 'docs/v3-UPGRADE-GUIDE.md', 'MIGRATION.md', 'docs/migrating-to-5.md'].map((path) => ({ url: `https://github.com/o/r/blob/HEAD/${path}`, text: path }));
+    expect(pickGuides(guides, ['3.0.0'], 5).map((g) => [g.text, g.version])).toEqual([['docs/v3-UPGRADE-GUIDE.md', '3.0.0'], ['MIGRATION.md', '3.0.0']]);
+    expect(pickGuides(guides, ['4.0.0', '5.0.0'], 5).map((g) => [g.text, g.version])).toEqual([['MIGRATION.md', '5.0.0'], ['docs/migrating-to-5.md', '5.0.0']]);
+    expect(pickGuides(guides, ['3.0.0'])).toHaveLength(2);
+  });
+
+  it('adds a repository upgrade guide to the notes even when the release does not link to it', async () => {
+    const http: HttpGet = async (url) => {
+      if (url.includes('/releases?')) return { status: 200, text: JSON.stringify([{ tag_name: 'v3.0.0', html_url: 'https://github.com/o/r/releases/tag/v3.0.0', body: 'Now ESM only. See the changelog.' }]) };
+      if (url.includes('/git/trees/')) return { status: 200, text: JSON.stringify({ tree: [{ path: 'docs/v3-UPGRADE-GUIDE.md', type: 'blob' }] }) };
+      if (url.endsWith('/HEAD/docs/v3-UPGRADE-GUIDE.md')) return { status: 200, text: '## The `timeout` option was removed.\nUse AbortSignal.' };
+      return { status: 404, text: '' };
+    };
+    const notes = await fetchReleaseNotes({ owner: 'o', repo: 'r' }, ['3.0.0'], http);
+    expect(notes.map((n) => [n.kind, n.version, n.url])).toEqual([
+      ['release_notes', '3.0.0', 'https://github.com/o/r/releases/tag/v3.0.0'],
+      ['migration_guide', '3.0.0', 'https://github.com/o/r/blob/HEAD/docs/v3-UPGRADE-GUIDE.md'],
+    ]);
+    expect(notes[1]?.excerpt).toContain('`timeout` option was removed');
   });
 
   it('uses the release when it has notes and the changelog when it does not', async () => {
