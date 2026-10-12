@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { createChat, type Chat } from '../llm/client.ts';
-import { runToolLoop, type LoopTool, type ToolCallRecord } from '../llm/loop.ts';
+import { LoopFailed, runToolLoop, type LoopTool, type ToolCallRecord } from '../llm/loop.ts';
 import { loadPrompt, type LoadedPrompt } from '../llm/prompts.ts';
 import { guarded, note, traced, type SetAttrs } from '../observability/neatlogs.ts';
 import { Records, type FindingRecord, type FindingStatus } from '../state/records.ts';
@@ -210,7 +210,9 @@ export function createImpactHandler(deps: { chat?: Chat; provider?: ImpactProvid
       }
 
       const sources = records.sourcesFor(finding.id);
-      const result = await ctx.step('impact_reasoning', { finding: finding.id, package: candidate.package, from: candidate.installed, to: candidate.targetVersion }, () =>
+      let result: ImpactResult;
+      try {
+      result = await ctx.step('impact_reasoning', { finding: finding.id, package: candidate.package, from: candidate.installed, to: candidate.targetVersion }, () =>
         runImpactAgent(candidate, async (prompt, set): Promise<ImpactResult> => {
           const chat = deps.chat ?? createChat(ctx.db, ctx.limits);
           const loop = await runToolLoop<ImpactReport>({
@@ -238,6 +240,19 @@ export function createImpactHandler(deps: { chat?: Chat; provider?: ImpactProvid
           return { report: loop.result, toolCalls: loop.toolCalls, turns: loop.turns, costUsd: loop.costUsd, promptVersion: prompt.version };
         }),
       );
+      } catch (err) {
+        if (!(err instanceof LoopFailed)) throw err;
+        // The model gave no usable assessment. One package must not end the investigation: every file
+        // that uses it is kept as possibly affected, and the tests on the new version decide.
+        const files = [...new Set(sites.map((s) => s.file))];
+        note('impact of {package} could not be assessed: {reason}', { package: candidate.package, reason: err.message.slice(0, 200) });
+        records.saveImpact(
+          finding.id,
+          { status: 'potential', confidence: 0.25, usageScore: usageScore(files.length), rationale: `${finding.rationale} The impact analysis did not complete, so every file that uses ${candidate.package} is treated as possibly affected: ${files.join(', ')}.` },
+          uniqueSites(sites),
+        );
+        continue;
+      }
 
       const affected = result.report.sites.filter((s) => s.verdict === 'affected');
       const unsure = result.report.sites.filter((s) => s.verdict === 'unsure');
