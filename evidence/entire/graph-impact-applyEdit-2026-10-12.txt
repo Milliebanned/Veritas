@@ -1,0 +1,21 @@
+$ entire graph impact --repo . --symbol applyEdit
+Impact: applyEdit (src/tools/fileEdit.ts:29) def=29 span=29-110 [function]
+Blast radius: 3 callers (3 direct, 0 transitive), 7 callees, 2 type consumers, 1 data flow, 1 co-change file, 1 siblin
+Callers (3 direct, 0 transitive; who breaks if behavior changes):
+- createRepairHandlers (src/agent/repair.ts:373, def :183)
+- editTool (src/agent/repair.ts:373, def :357)
+- repair.test.ts (tests/repair.test.ts)
+Callees (7; what it depends on):
+- node:fs.existsSync
+- node:fs.readFileSync
+- node:fs.writeFileSync
+- node:path.relative
+- EditRejected (src/tools/fileEdit.ts:5) [CONSTRUCTS]
+- isTestFile (src/tools/fileEdit.ts:15)
+- resolveInside (src/tools/paths.ts:15)
+Type consumers (0 in, 2 out; USES_TYPE/PARAM_TYPE/RETURNS_TYPE):
+- -> EditRequest (src/tools/fileEdit.ts:17) [PARAM_TYPE]
+- -> EditRequest (src/tools/fileEdit.ts:17) [USES_TYPE]
+Data flows (0 in, 1 out):
+- -> resolveInside (src/tools/paths.ts:15)
+Co-change coupling (1; files that historically change with src/tools/fileEdit.ts):
