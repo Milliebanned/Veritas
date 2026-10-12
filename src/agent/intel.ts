@@ -1,10 +1,12 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import semver from 'semver';
 import { note, traced } from '../observability/neatlogs.ts';
 import { Records, type FindingInput, type SourceInput } from '../state/records.ts';
 import { fetchAdvisories, type Advisory } from '../tools/advisories.ts';
 import { fetchReleaseNotes, type ReleaseNote } from '../tools/githubReleases.ts';
 import { readInventory, type Inventory } from '../tools/manifest.ts';
-import { runNpmAudit, type AuditEntry, type Severity } from '../tools/npmCli.ts';
+import { generateLockfile, runNpmAudit, type AuditEntry, type Severity } from '../tools/npmCli.ts';
 import { fetchPackageInfo, type GithubRepo, type PackageInfo } from '../tools/npmRegistry.ts';
 import { repoDir } from './intake.ts';
 import type { RunContext, StateHandler } from './states.ts';
@@ -13,12 +15,14 @@ import type { RunContext, StateHandler } from './states.ts';
 export interface IntelTools {
   readInventory(repoDir: string): Inventory;
   runNpmAudit(repoDir: string, timeoutMs: number): Promise<AuditEntry[]>;
+  /** Writes a lockfile for a project that has none. Optional so recorded tests need not provide it. */
+  generateLockfile?(repoDir: string, timeoutMs: number): Promise<void>;
   fetchPackageInfo(name: string, installed: string): Promise<PackageInfo>;
   fetchReleaseNotes(repo: GithubRepo, versions: string[]): Promise<ReleaseNote[]>;
   fetchAdvisories(name: string, version: string): Promise<Advisory[]>;
 }
 
-export const realTools: IntelTools = { readInventory, runNpmAudit, fetchPackageInfo, fetchReleaseNotes, fetchAdvisories };
+export const realTools: IntelTools = { readInventory, runNpmAudit, generateLockfile, fetchPackageInfo, fetchReleaseNotes, fetchAdvisories };
 
 /** A lookup that could not be completed. The investigation continues without it and says so. */
 interface Unavailable {
@@ -54,6 +58,15 @@ export function createInventoryHandler(tools: IntelTools): StateHandler {
     const dir = repoDir(ctx.investigationId);
     const commit = ctx.journal.getInvestigation(ctx.investigationId)?.commit_sha ?? null;
 
+    if (tools.generateLockfile && existsSync(join(dir, 'package.json')) && !existsSync(join(dir, 'package-lock.json'))) {
+      await ctx.step('generate_lockfile', { commit }, () =>
+        tool('generate_lockfile', {}, async () => {
+          await tools.generateLockfile!(dir, Math.max(ctx.limits.cmdTimeoutMs, 180_000));
+          note('the project has no package-lock.json, so one was resolved from package.json for this investigation');
+          return { generated: true };
+        }),
+      );
+    }
     await ctx.step('read_lockfile', { commit }, () =>
       tool('read_lockfile', {}, () => {
         const inventory = tools.readInventory(dir);
