@@ -1,0 +1,815 @@
+Great. What is neatlog function in all of this thing. All this fixing that you are doing, is that not um, neatlog that is supposed to be doing it? Because I don't even understand the neatlog function and work in all of this. Also, I cannot go up and start searching for message above. Just bring it up, bring it up again. You're talking about uh, uh, entire too.
+
+---
+
+That was Veritas doing a bad job. Spotting that in the recording, working out the cause, and suggesting the improvement is neatlogs' job. I did it by hand this time, because neatlogs' platform is currently stuck and can't process our recordings.
+
+here You said suggesting. Or suggestion. Does that mean neatlog cannot fix it?
+
+---
+
+Step 4. Put it on neatlog. Because the developer during our meeting today said that they have given all the features to us. Which means that step 4 you think it cannot do. And some uh, paid plan, it can it can do it. Also, the cursor part agent, the cursor cloud agent, how can I get that?
+
+---
+
+i have merged it. also, i thnk i connected my github and repo properly
+
+---
+
+Fucking clown. I've already saved it. Before I just went there again to show you. That I've connected it before.
+
+---
+
+try again
+
+---
+
+Continue from where you left off.
+
+---
+
+go and take those screenshots for me. I have um, Claude uh, extension. On my Chrome, so you can literally access it. And take the screenshots.
+
+---
+
+Continue from where you left off.
+
+---
+
+go and check it again, i gave the permission already
+
+---
+
+I can't seem to merge this particular thing. The merge button keeps rolling, and when I place my cursor on it, it shows this.
+
+---
+
+uh, finish merging. So you are very sure that we are using neatlog in the right way you want us to use it, right? Now, what is the next one? I'm not saying you should start the next one yet. I'm asking, what is the next one?
+
+---
+
+Also, also, we have been focusing on neatlog. Don't forget entire. You have to make sure and check time to time that we are using entire the way we are supposed to use it.
+
+---
+
+done. However, I am entirely disappointed in you. About what you did on entire. Despite the fact of hard prompt and instruction that I gave you, you still went on to do what is on your mind . You are a shame
+
+---
+
+I don't understand what you are trying to tell me here. I literally don't understand.
+
+---
+
+that is literally homepagelink
+
+---
+
+It shows. However, why does the project lack comprehensive README?
+
+---
+
+now move to the next milestone
+
+---
+
+So why do we have to open neatlog? And you know, manually give it prompt to you know check the figs and make a pull request before we can. Uh, is it, is neatlog not like supposed to do it automatically? Understand? Why let's say the agent is failing to do its job, at the back end, neatlog is supposed to like see it automatically, fix it automatically, and do stuff on it automatically, right?
+
+---
+
+So I see there are some people who are using entire with open code. But I don't understand because, let me give you an example of the um, the message sent by someone. I've sent like a couple of people you know, send this kind of message, but I still don't understand entire with open code. Like, what's the correlation?
+
+---
+
+So I just merged the uh, request pool. Okay, so what are we going to do now? Like, I mean, you are saying neatlog is having some kind of problem that we don't understand yet. What's the next thing? How we are supposed to doing
+
+---
+
+i have published my first neat public building since yesterday buffon. you do your job
+
+---
+
+<task-notification>
+<task-id>bouu81mfc</task-id>
+<tool-use-id>toolu_01VDHJetGhTz2bxmG9G56H54</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-Apple-neatlog/6cbb0655-ec34-476d-a414-19317c18ac1f/tasks/bouu81mfc.output</output-file>
+<status>failed</status>
+<summary>Background command "Retake the app screenshots with the headless browser, which renders only the page itself" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+tell me how to get what you need of aws
+
+---
+
+13.222.49.252
+
+yes it is there
+
+---
+
+also, it says running
+
+---
+
+This is what I see at the VPC side.
+
+---
+
+what about this
+
+---
+
+3.88.235.251
+
+---
+
+uh, open it with VS Code. The site looks like shit. Also, we want people to be able to connect the IP up. Like a login kind of stuff, whereby they connect the IP up. And this looks like basic stuff for something that we have been spending a lot of time on. This is very, very bad. Also, why do we have to use token every time we want to like somebody wants to access the site ? Does that even make any sense? What happens, sir?
+
+---
+
+So are you telling me you cannot design a premium site with a very good 3d animation good animation does ticks volume and you know grandeur telling me you cannot build that telling me you cannot build a very cool looking that speaks like it's an agent a website that looks like it's an agent website a premium agent website that a developer can trust me that with their, their links and with their authentications are you telling me that you cannot build something like that
+
+---
+
+https://pin.it/7giLl76KL
+I don't know if you can check Pinterest link, but look at the design. That this person using this video. It's so gorgeous. This design that you gave to me, it's so generic. Doesn't look it's it's look like some random project that somebody does not even use. Effort, even the place where you will put the repo, everything looks nonsensical. It looks unorganized, even me that I am building it, I don't even understand it.
+
+---
+
+https://pin.it/2FuP6gt0m this is the type i want now
+
+---
+
+is it not gonna be proper to host it on good domain first?
+
+veritas.milliebanned.xyz
+
+---
+
+i hVE DONE EVERTHING BUT THE DOMAIN IS STILL NOT OPENING THE SITE
+
+---
+
+this is what i get, and make the step more clear please
+
+---
+
+done
+
+---
+
+okay, the sign in works
+
+---
+
+Yeah, um, it's open pull request. The open pull request without no problem, but the only problem I have is that whenever you click on patch review, findings, or any other tab beside them, it is supposed to scroll down automatically to show them, but instead it just keep going back up, then you have to like use mouse yourself to scroll down. That's that doesn't look right, you know, based on user experience.
+
+---
+
+Also, our neatlog entire I hope they are all you know working behind the scenes because I think that's what the judge really want to see working. Because while we are giving our agent work, while our agent is working, they want to see especially neatlog you know trying to you know fix the agent. Like one of the developers said in one call we had with them, is that we are trying to avoid another Apollo. You know, Apollo is a type of a rocket that whatever is happening to it that is bad, it just keeps going and just keep going and just keep going. The engine just keep working. Even if the engine is hot and everything. I think that's what the developer is trying. So when you know what I'm saying, whenever this agent is working and there's a problem with this agent, neatlog is you know trying to correct it and you know handing over the stuff to you as a coding agent because we are already connected to you. Is this working? Like that's the because at the end of the day when we finish what doing this thing, we are going to test it, we are going to bombard the agent with a lot of work so that neatlog and entire can be put to crazy work. Is that not it?
+
+---
+
+https://x.com/Milliebanned/status/2108955409251700925?s=20
+
+my neat hack post
+
+---
+
+Well, this is what I see. I cant see fix tab. So I don't know what you're talking about.
+
+---
+
+This is the picture of both screenshots you asked for. Save the necessary one.
+
+---
+
+nothing on resolved page yet
+
+---
+
+what is next?
+
+---
+
+give me x post to do update for x, you can add that github screenshot that has neatlog in the pull request
+
+---
+
+https://x.com/Milliebanned/status/2109584090840047664?s=20. this is the tweet
+
+---
+
+move to uh, paint this yet neatlog what is as it push anything to you yet is it working well is there anything that we should know also I'm going to send some things to you now now posted by um, developer and how to submit, how to make demo video. I believe so. Like, what is it? You know, neatlog is very essential to this thing. So, is neatlog really doing what it's supposed to be doing? Like, right now, and you can just like hand over like, is it like handing over what it's supposed to be like handing over?
+
+---
+
+<pasted_content id="d47b">
+**@everyone - Instructions before shooting your submission demo video**
+
+We were looking at your traces while you were building your agents. We have a feature that lets you look at your critical incidents, and you need to show how it helped indentify and solve these incidents.
+
+I've attached a demo video on how you can use this feature: https://drive.google.com/file/d/REDACTED/view?usp=sharing
+
+Meanwhile, for your overall demo video submission, in ONE video, you should talk about:
+
+- the problem your agent solves
+- how cfo.ai and entire were part of the project
+- how neatlogs was used to identify and resolve the incidents your agent ran into
+
+**keep your videos ready, submissions start today, 12th October 7pm IST!** 🎊
+</pasted_content id="d47b">
+
+<pasted_content id="d47b">
+**@everyone  🚨 neatHack submissions open today at 7 PM IST!**
+
+You've built something. Now it's almost time to show it off.
+
+⏰ **Submission window: 7:00–11:55 PM IST**
+
+Here's what you need to do:
+
+**1️⃣ Quote-tweet the official @neatlogs launch post on X.**
+
+We'll share the link at 7 PM IST.
+
+Your quote-tweet must include **tags for @neatlogs, @EntireHQ, and @arithecfo**
+
+**2️⃣ Complete the submission form.**
+
+We'll share that link at 7 PM too.
+
+⚠️ **IMPORTANT:** Both steps are mandatory. You MUST quote-tweet the official launch post **and tag all three accounts**. This is the only way our systems can detect your submission. The form alone doesn't count.
+
+⭐ **Want bonus points?** Make sure your demo video clearly explains the problem you're solving and how your solution works.
+
+🔥 We’ll engage with the **first 50 quote-tweets**, so get everything ready now!
+
+See you at 7 PM. 🚀
+</pasted_content id="d47b">
+
+also, i have already merge that shii wtf
+
+Also, you can absolutely run dependency or whatever you said that you cannot do on that thing. You can do it. You can put it on Claude Cloud. I have Claude under the last Claude this thing that you can use for this. You, you have to help me test the agent like many times. So that you get the neatlog can be put to
+
+---
+
+<pasted_content id="d47b">
+Created Veritas’s revised launch case without changing Main, found 3 table blocks, updated the plan, and 11 more
+0s
+
+
+
+
+The revised case stays funded for all 12 months and ends with $5,033.24. The free subsidy falls from $120 to $4.50 per paying customer per month.
+
+The salary rule has an important consequence: it permits payments in months 1, 6, 9, 11 and 12, and skips the other seven. The business is profitable before founder pay from month 1, but it still cannot support a continuous $3,000 monthly salary within this forecast. The final cash cushion is just $33.24 above your floor.
+
+
+
+Ensured overages feed both cost-to-serve and margin calculations, checked revised annual totals and minimum cash in the model, updated 1 page, and 6 more
+0s · 10.5k tokens
+
+
+
+
+
+
+
+
+Created Veritas Revised Launch, alongside Main. Main’s inputs, formulas and forecast are unchanged.
+
+Open the 
+side-by-side launch comparison
+.
+
+The revised case survives the full 12 months, ending with $5,033.24—but it supports intermittent founder pay, not a steady $3,000 monthly salary.
+
+1. Cost to serve and gross margin
+At full included investigation usage, before shared infrastructure and other operating costs:
+
+Plan
+
+Main cost/month
+
+Main gross margin
+
+Revised cost/month
+
+Revised gross margin
+
+Free, per user
+
+$12.00
+
+Not meaningful: no revenue
+
+$0.45
+
+Not meaningful: no revenue
+
+Team, per customer
+
+$25.80
+
+47.3%
+
+$25.80
+
+73.9%
+
+Business, per customer
+
+$129.00
+
+35.2%
+
+$129.00
+
+67.7%
+
+Paid costs remain unchanged because the included usage and $0.60 investigation cost remain unchanged. Higher prices improve margins.
+
+With ten free users per paying customer, the allocated free subsidy falls from $120 to $4.50 per paying customer per month:
+
+Contribution after free subsidy, before overhead
+
+Main
+
+Revised
+
+Team
+
+−$96.80
+
+$68.70
+
+Business
+
+−$50.00
+
+$265.50
+
+These are model-only economics. Sandbox/test execution beyond the infrastructure allowance, support and payment fees remain excluded.
+
+2. Monthly revenue, costs and profit
+October 2026–September 2027. USD, rounded to whole dollars. Costs include founder salary when paid.
+
+Month
+
+Main revenue
+
+Main costs
+
+Main profit
+
+Revised revenue
+
+Revised costs
+
+Revised profit
+
+1 · Oct-26
+
+$247
+
+$812
+
+−$565
+
+$426
+
+$3,385
+
+−$2,960
+
+2 · Nov-26
+
+$301
+
+$936
+
+−$635
+
+$519
+
+$415
+
+$104
+
+3 · Dec-26
+
+$367
+
+$1,086
+
+−$719
+
+$633
+
+$451
+
+$182
+
+4 · Jan-27
+
+$448
+
+$1,270
+
+−$823
+
+$773
+
+$495
+
+$277
+
+5 · Feb-27
+
+$546
+
+$1,495
+
+−$949
+
+$943
+
+$549
+
+$393
+
+6 · Mar-27
+
+$666
+
+$1,769
+
+−$1,102
+
+$1,150
+
+$3,615
+
+−$2,465
+
+7 · Apr-27
+
+$813
+
+$5,103
+
+−$4,290
+
+$1,403
+
+$696
+
+$708
+
+8 · May-27
+
+$992
+
+$5,510
+
+−$4,519
+
+$1,712
+
+$794
+
+$918
+
+9 · Jun-27
+
+$1,210
+
+$6,008
+
+−$4,798
+
+$2,089
+
+$3,913
+
+−$1,825
+
+10 · Jul-27
+
+$1,476
+
+$6,614
+
+−$5,138
+
+$2,548
+
+$1,059
+
+$1,489
+
+11 · Aug-27
+
+$1,801
+
+$7,354
+
+−$5,554
+
+$3,109
+
+$4,237
+
+−$1,128
+
+12 · Sep-27
+
+$2,197
+
+$8,257
+
+−$6,061
+
+$3,793
+
+$4,454
+
+−$662
+
+Revised 12-month totals: $19,096.96 revenue, $24,063.72 costs and a $4,966.76 loss, including $15,000 founder pay.
+
+Salary rule used
+Each month pays $3,000 only if closing cash after that payment remains strictly above $5,000.
+
+That permits salary in months 1, 6, 9, 11 and 12. The other seven months pay zero. Month 1 qualifies because you start with $10,000.
+
+I interpreted your starting customer count as three paying design partners total, retaining the 6:1 Team-to-Business mix as expected values. Main still starts with 3 Team plus 0.5 Business. Both cases retain 22% net monthly growth: 25% additions less 3% churn. No design-partner discount or overage sales are assumed.
+
+3. Break-even, runway and lowest cash
+Measure
+
+Main
+
+Revised
+
+First profitable month, after actual salary
+
+Not reached
+
+Month 2 · Nov-26
+
+Profitable before founder pay
+
+Not reached
+
+From month 1
+
+Covers a continuous $3,000 monthly salary
+
+Not reached
+
+Not reached within 12 months
+
+Runway from $10,000
+
+About 7.2 months
+
+More than 12 months; no cash exhaustion within the forecast
+
+Lowest modeled month-end cash
+
+−$25,153.16, month 12
+
+$5,033.24, month 12
+
+Month 2 is the first positive-profit month, not sustained break-even. Salary-payment months still generate losses.
+
+Main’s negative cash is a funding shortfall, not an available balance. Revised cash stays positive, but its lowest balance is only $33.24 above your salary floor. Actual payment timing can produce lower cash within a month.
+
+4. Exact revised prices and budgets
+Plan
+
+Price/month
+
+Repository access
+
+Included investigations/month
+
+Extra investigations
+
+Free
+
+$0
+
+Public repositories only
+
+5 per user
+
+Not available
+
+Team
+
+$99
+
+Up to 10 private repositories
+
+43 per account
+
+$1.50 each, opt-in
+
+Business
+
+$399
+
+Up to 50 repositories; priority runs
+
+215 per account
+
+$1.50 each, opt-in
+
+Free runs use the small model at $0.09 each.
+
+Paid included runs and overages use the stronger model at $0.60 each.
+
+Additional repair/retry investigations consume the same budget.
+
+Extra runs require explicit spending approval; otherwise execution stops at the allowance.
+
+The forecast assumes zero overages rather than relying on unproven demand. Each sold overage would contribute $0.90 before non-model costs.
+
+I verified the comparisons, salary payments, minimum cash and annual totals, and tested that overages increase both revenue and usage costs before restoring zero assumed sales.
+
+My next recommendation: stress-test sandbox costs and payment fees before treating the $5,000 floor as protected cash. This version fixes the free-tier economics; the remaining weakness is the thin cash buffer and irregular founder income.
+</pasted_content id="d47b">
+
+https://cfo.ai/s/R5-5UDJk4xc5TlZQ
+
+---
+
+i have downloaded the video in the drive into downloads folder as neatlogs incident
+
+---
+
+So I've merged the request the pull request so uh, once merged, uh, what is next are we done building everything that is supposed to be in this project if you are done then can you just you know take public repos on web and just keep testing it on the agent just keep testing them on the agent so that we can just make sure the agent is working so neatlog can just pull more stuff out
+
+---
+
+Continue testing it. Go search the web for public GitHub repository it's not it's not hard to get and use it to test it against this thing it's not hard to get just do
+
+---
+
+also, don't fix any problem with the agent unless neatlog push it to you. That's the point, because the fix it before neatlog can even discover it. How will neatlog even put it under a student and can use it to even show them more?
+
+---
+
+We are not going to record demo video now because I still need some things, but this demo video is going to follow three things that I sent to you with the Google Drive link. So we are going to demonstrate how neatlog by showing the screenshot and moving arrow over them like they are live page. I don't know, maybe you get what I'm trying to say. Those screenshots, when the students show, when the incident is resolved, when we open the incident and when we see Uh, how to send it to AI, when we send it to AI, you have all those screenshots, and all the traces, when we were asking AI and the pull requests, everything, we need to show it. Right? We even need to show it I'm very sure of that. According to this, I'll send screenshots to you now. Again, I want you to use my own voice so I will send you how you can clone my voice and everything now.
+
+---
+
+<pasted_content id="d47b">
+Read the file ~/Documents/BUGGER/VOICE TOOLS/README_FOR_CLAUDE.md and follow it.
+
+My voice recording is at ~/Documents/BUGGER/VOICE TOOLS/my_voice.m4a
+
+The exact words I say in the recording are:
+"In two thousand twenty-six, the price of diesel almost doubled in seven months. Truck drivers paid for it. Farmers paid for it. But somebody was getting paid, too. This is the story of who made the money, how they did it, and why almost nobody noticed. Follow the numbers with me, because the answer is not where you would expect. And by the end, you will never look at a gas station sign the same way again."
+
+Do this:
+1. Convert my recording to WAV (mono, 44100 Hz) and save it as my_voice.wav in the same folder.
+2. Use fish_clone.py with that WAV and the transcript above to read the test line below in my voice, and save it as my_voice_test.mp3 in the same folder.
+3. Tell me where the file is so I can listen. Do not print or share the API key.
+
+Test line: "Russia is selling twenty billion dollars of oil assets, and Americans are lining up to buy. Here is how that happened."
+</pasted_content id="d47b">
+
+---
+
+done Also, the body screenshot like I said about the screenshot I've Claude extension on my Chrome you can literally go through all these pieces and take screenshots yourself you can go to them open the link press wherever you want to press and take the fucking screenshots yourself
+
+---
+
+Does tell me how to connect the extension here. So you can capture the necessary things. I'm not improvising here. Because I need that necessary things to make the judge see from my own eyes. Also, clone the voice gave me a, an example first. I've given you all what you need. Don't be lazy.
+
+---
+
+<browser tabGroupId="894654402" tabId="1082335168"></browser>
+<browser_instruction># Claude in Chrome browser automation
+
+You have access to browser automation tools (mcp__claude-in-chrome__*) for interacting with web pages in Chrome. Follow these guidelines for effective browser automation.
+
+## Loading deferred tools
+
+If the mcp__claude-in-chrome__* tools are deferred (must be loaded via ToolSearch before use), load every tool you expect to need in ONE ToolSearch call — the select query accepts a comma-separated list — never one call per tool. Start with the core set:
+
+ToolSearch with query "select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__tabs_create_mcp,mcp__claude-in-chrome__tabs_close_mcp"
+
+Add task-specific tools to the same call when the task obviously needs them: read_console_messages / read_network_requests for debugging, form_input for forms, gif_creator for recordings, javascript_tool for page scripting.
+
+## GIF recording
+
+When performing multi-step browser interactions that the user may want to review or share, use mcp__claude-in-chrome__gif_creator to record them.
+
+You must ALWAYS:
+* Capture extra frames before and after taking actions to ensure smooth playback
+* Name the file meaningfully to help the user identify it later (e.g., "login_process.gif")
+
+## Console log debugging
+
+You can use mcp__claude-in-chrome__read_console_messages to read console output. Console output may be verbose. If you are looking for specific log entries, use the 'pattern' parameter with a regex-compatible pattern. This filters results efficiently and avoids overwhelming output. For example, use pattern: "[MyApp]" to filter for application-specific logs rather than reading all console output.
+
+## Alerts and dialogs
+
+IMPORTANT: Do not trigger JavaScript alerts, confirms, prompts, or browser modal dialogs through your actions. These browser dialogs block all further browser events and will prevent the extension from receiving any subsequent commands. Instead, when possible, use console.log for debugging and then use the mcp__claude-in-chrome__read_console_messages tool to read those log messages. If a page has dialog-triggering elements:
+1. Avoid clicking buttons or links that may trigger alerts (e.g., "Delete" buttons with confirmation dialogs)
+2. If you must interact with such elements, warn the user first that this may interrupt the session
+3. Use mcp__claude-in-chrome__javascript_tool to check for and dismiss any existing dialogs before proceeding
+
+If you accidentally trigger a dialog and lose responsiveness, inform the user they need to manually dismiss it in the browser.
+
+## Avoid rabbit holes and loops
+
+When using browser automation tools, stay focused on the specific task. If you encounter any of the following, stop and ask the user for guidance:
+- Unexpected complexity or tangential browser exploration
+- Browser tool calls failing or returning errors after 2-3 attempts
+- No response from the browser extension
+- Page elements not responding to clicks or input
+- Pages not loading or timing out
+- Unable to complete the browser task despite multiple approaches
+
+Explain what you attempted, what went wrong, and ask how the user would like to proceed. Do not keep retrying the same failing browser action or explore unrelated pages without checking in first.
+
+## Tab context and session startup
+
+IMPORTANT: At the start of each browser automation session, call mcp__claude-in-chrome__tabs_context_mcp first to get information about the user's current browser tabs. Use this context to understand what the user might want to work with before creating new tabs.
+
+Never reuse tab IDs from a previous/other session. Follow these guidelines:
+1. Only reuse an existing tab if the user explicitly asks to work with it
+2. Otherwise, create a new tab with mcp__claude-in-chrome__tabs_create_mcp
+3. If a tool returns an error indicating the tab doesn't exist or is invalid, call tabs_context_mcp to get fresh tab IDs
+4. When a tab is closed by the user or a navigation error occurs, call tabs_context_mcp to see what tabs are available</browser_instruction>
+@browser take the neatlogs and cfo.ai screenshots
+
+---
+
+the voice is so bad it's like there is noise behind the voice the voice is not loud it's not clear it's so bad and I've used the model to clone voice before and it is very very good so I don't know what you did to it also I want to see those screenshots that you took
+
+---
+
+You know what, there is still that particular noise behind um, the voice. You know what, let me maybe it's the voice that I gave to you. Let me just give, let me just record another voice. Recording and maybe that will sort it out.
+
+---
+
+it is in the file as new recording
+
+---
+
+It sounds like you're giving British accent. I want it to sound natural. Not like you give it British accent. I want it to sound natural and flow naturally. '
+
+---
+
+Yeah, you went there stream with that. I say it's, I want it natural. I don't you, now you went there stream. I won't even like you, you literally went there stream.
+
+---
+
+So the v4 option B is kind of good. But there is no spacing in speech. It just kind of mubbled it up without breath.
+
+---
+
+now that i look at it, i love v3 voice sample more, build our demo video on that
+
+---
+
+<task-notification>
+<task-id>bnpacml4a</task-id>
+<tool-use-id>toolu_01QLMPMZNdZyAjRDwBJUR7Ms</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-Apple-neatlog/4400f420-2f05-4305-97ae-2c92621b2692/tasks/bnpacml4a.output</output-file>
+<status>completed</status>
+<summary>Background command "Capture the Express investigation's findings and patch review pages from a local copy of the site, so the screen matches the narration" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+this is the worst demo video i have ever seen in my life. you know what? just use one of fishlab natural voice. also explain what my product do and demo it properly.
+follow this strictly with clear  explanation; 
+
+<pasted_content id="d47b">
+the problem your agent solves
+how cfo.ai and entire were part of the project
+how neatlogs was used to identify and resolve the incidents your agent ran into
+</pasted_content id="d47b">
+
+also, put a fucking subtitle
+
+---
+
+yoiu are getting there but i am still not satisfy, you crop those screenshot too much, you did not show all those icident screenshots before resolving, you crop almost a screenshots too much, fix that
+
+---
+
+now give x post to post based on all rules sent to you
+
+---
+
+dont limit the character, i got premium now. also, did you demo entire graph part?
