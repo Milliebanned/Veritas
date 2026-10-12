@@ -1,5 +1,7 @@
+import { TokenBudgetExceeded } from '../llm/client.ts';
 import type { Db } from '../state/db.ts';
 import { Journal, type Investigation } from '../state/journal.ts';
+import { Records } from '../state/records.ts';
 import { note, traced, traceOutput } from '../observability/neatlogs.ts';
 import { loadLimits, type Limits } from './limits.ts';
 import { TRANSITIONS, type Handlers, type RunContext, type State } from './states.ts';
@@ -51,7 +53,23 @@ export class Orchestrator {
         try {
           while (state !== 'AWAITING_APPROVAL') {
             if (Date.now() > deadline) throw new InvestigationTimeout(this.limits.investigationTimeoutMs);
-            const next = await this.runState(inv, state);
+            let next: State;
+            try {
+              next = await this.runState(inv, state);
+            } catch (err) {
+              if (!(err instanceof TokenBudgetExceeded) || state === 'REPORT') throw err;
+              // The spending limit ends the model's work, not the investigation: report what is known so far.
+              const records = new Records(this.opts.db);
+              for (const repair of records.repairs(investigationId)) {
+                if (repair.status === 'planned' || repair.status === 'reproduced' || repair.status === 'patched') {
+                  records.updateRepair(repair.id, { status: 'unresolved', note: 'The investigation reached its spending limit before this repair was finished.' });
+                }
+              }
+              note('spending limit reached in {state}; reporting what is known', { state, level: 'warn' });
+              this.journal.setState(investigationId, 'REPORT');
+              state = 'REPORT';
+              continue;
+            }
             if (!TRANSITIONS[state].includes(next)) {
               throw new Error(`Illegal transition ${state} -> ${next}`);
             }

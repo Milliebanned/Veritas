@@ -1,11 +1,9 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import semver from 'semver';
 import { note, traced } from '../observability/neatlogs.ts';
 import { Records, type FindingInput, type SourceInput } from '../state/records.ts';
 import { fetchAdvisories, type Advisory } from '../tools/advisories.ts';
 import { fetchReleaseNotes, type ReleaseNote } from '../tools/githubReleases.ts';
-import { readInventory, type Inventory } from '../tools/manifest.ts';
+import { needsLockfile, readInventory, type Inventory } from '../tools/manifest.ts';
 import { generateLockfile, runNpmAudit, type AuditEntry, type Severity } from '../tools/npmCli.ts';
 import { fetchPackageInfo, type GithubRepo, type PackageInfo } from '../tools/npmRegistry.ts';
 import { repoDir } from './intake.ts';
@@ -58,11 +56,11 @@ export function createInventoryHandler(tools: IntelTools): StateHandler {
     const dir = repoDir(ctx.investigationId);
     const commit = ctx.journal.getInvestigation(ctx.investigationId)?.commit_sha ?? null;
 
-    if (tools.generateLockfile && existsSync(join(dir, 'package.json')) && !existsSync(join(dir, 'package-lock.json'))) {
+    if (tools.generateLockfile && needsLockfile(dir)) {
       await ctx.step('generate_lockfile', { commit }, () =>
         tool('generate_lockfile', {}, async () => {
           await tools.generateLockfile!(dir, Math.max(ctx.limits.cmdTimeoutMs, 180_000));
-          note('the project has no package-lock.json, so one was resolved from package.json for this investigation');
+          note('the project has no usable package-lock.json (missing or version 1), so one was resolved for this investigation');
           return { generated: true };
         }),
       );

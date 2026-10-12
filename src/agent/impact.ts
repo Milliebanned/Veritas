@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { createChat, type Chat } from '../llm/client.ts';
+import { createChat, TokenBudgetExceeded, type Chat } from '../llm/client.ts';
 import { LoopFailed, runToolLoop, type LoopTool, type ToolCallRecord } from '../llm/loop.ts';
 import { loadPrompt, type LoadedPrompt } from '../llm/prompts.ts';
 import { guarded, note, traced, type SetAttrs } from '../observability/neatlogs.ts';
@@ -241,8 +241,8 @@ export function createImpactHandler(deps: { chat?: Chat; provider?: ImpactProvid
         }),
       );
       } catch (err) {
-        if (!(err instanceof LoopFailed)) throw err;
-        // The model gave no usable assessment. One package must not end the investigation: every file
+        if (!(err instanceof LoopFailed) && !(err instanceof TokenBudgetExceeded)) throw err;
+        // The model gave no usable assessment, or the spending limit was reached. One package must not end the investigation: every file
         // that uses it is kept as possibly affected, and the tests on the new version decide.
         const files = [...new Set(sites.map((s) => s.file))];
         note('impact of {package} could not be assessed: {reason}', { package: candidate.package, reason: err.message.slice(0, 200) });
