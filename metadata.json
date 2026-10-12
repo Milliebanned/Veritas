@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4QW4B541C3HNVY8WTKSF1DB",
+  "strategy": "manual-commit",
+  "branch": "m11-real-repos",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/tools/npmCli.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1090,
+    "cache_creation_tokens": 3098218,
+    "cache_read_tokens": 209449579,
+    "output_tokens": 638212,
+    "api_call_count": 451
+  }
+}
