@@ -52,7 +52,7 @@ Three rules hold throughout:
 
 ### cfo.ai
 
-The business plan (pricing, costs, revenue, runway) is built in cfo.ai from the measured cost per investigation. Not written yet.
+The business plan (pricing, costs, revenue, runway) is built in cfo.ai from the measured cost per investigation: [BUSINESS_PLAN.md](BUSINESS_PLAN.md). cfo.ai showed that our first pricing lost money on every customer because of the free plan; the revised plan is profitable before founder pay from month 1 and stays funded for 12 months. The model is public at https://cfo.ai/s/R5-5UDJk4xc5TlZQ.
 
 ## Results so far
 
