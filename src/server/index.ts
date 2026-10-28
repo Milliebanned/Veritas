@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyRequest } from 'fastify';
@@ -25,6 +25,9 @@ const admins = new Set((process.env.VERITAS_ADMINS ?? '').split(',').map((s) => 
 const userDailyLimit = Number(process.env.VERITAS_USER_DAILY_LIMIT ?? 5);
 const dailyLimit = Number(process.env.VERITAS_DAILY_LIMIT ?? 60);
 const demoDir = join(root, 'bench', 'cases');
+/** A public demo with no container sandbox: only the sample repositories, whose code we wrote, may run. */
+const showcase = process.env.VERITAS_SHOWCASE === '1';
+const isSample = (dir: string) => dir.startsWith(demoDir + sep) && relative(demoDir, dir).split(sep).length === 2 && dir.endsWith(sep + 'repo');
 
 /**
  * How people get in. With a GitHub OAuth app configured, they sign in with GitHub and see their
@@ -94,6 +97,7 @@ app.get('/api/me', async (request) => {
     admin: caller?.admin ?? false,
     model: activeModel(),
     sandbox: process.env.VERITAS_SANDBOX ?? 'docker',
+    showcase,
     daily_limit: mode === 'github' ? userDailyLimit : null,
     used_today: caller?.session ? startedToday(caller.session.github_login) : null,
   };
@@ -141,6 +145,7 @@ app.post('/api/investigations', async (request, reply) => {
   const isGithub = parseRepoUrl(repo) !== null;
   const local = resolve(root, repo);
   const isLocal = caller.admin && !isGithub && repo !== '' && local.startsWith(root) && existsSync(local) && statSync(local).isDirectory();
+  if (showcase && !(isLocal && isSample(local))) return reply.code(400).send({ error: 'This public demo runs on the sample repositories only.' });
   if (!isGithub && !isLocal) return reply.code(400).send({ error: 'Give the URL of a public GitHub repository, for example https://github.com/owner/repo' });
   // Each investigation spends model budget, so signed-in use is rationed.
   if (mode === 'github' && !caller.admin && startedToday(caller.session!.github_login) >= userDailyLimit) {

@@ -165,10 +165,10 @@ async function dashboard() {
   app.innerHTML = `${nav(true)}<main class="page">
     <div class="page-head"><h1>${me.user ? `Welcome, ${esc(me.user.login)}` : 'Investigations'}</h1><p>Choose a repository. Veritas checks its dependencies and comes back with a tested fix, or an honest reason why not.</p></div>
     <section class="start">
-      <h2>Start an investigation</h2><p class="hint">${repos.length ? 'Pick one of your repositories, or paste the address of any public one.' : 'Paste the address of a public GitHub repository that uses npm.'}</p>
+      <h2>Start an investigation</h2><p class="hint">${me.showcase ? 'This public demo runs on the sample repositories, small projects built with a known breaking upgrade.' : repos.length ? 'Pick one of your repositories, or paste the address of any public one.' : 'Paste the address of a public GitHub repository that uses npm.'}</p>
       <form id="new"><div class="inputs">
-        ${options ? `<select class="field" id="pick"><option value="">${repos.length ? 'Choose one of your repositories' : 'Choose a sample repository'}</option>${options}</select><div class="or">or</div>` : ''}
-        <input class="field" id="repo" type="text" placeholder="https://github.com/owner/repository" autocomplete="off"></div>
+        ${options ? `<select class="field" id="pick"${me.showcase ? ' required' : ''}><option value="">${repos.length ? 'Choose one of your repositories' : 'Choose a sample repository'}</option>${options}</select>${me.showcase ? '' : '<div class="or">or</div>'}` : ''}
+        <input class="field" id="repo" type="${me.showcase ? 'hidden' : 'text'}" placeholder="https://github.com/owner/repository" autocomplete="off"></div>
         <button class="btn big" type="submit">Investigate <span class="arrow">→</span></button></form>
       <div id="formError" class="error"></div>
       <div class="flow">
