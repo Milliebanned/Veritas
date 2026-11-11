@@ -99,3 +99,18 @@ export function runNpmAudit(repoDir: string, timeoutMs = 120_000): Promise<Audit
     );
   });
 }
+
+/**
+ * Writes a package-lock.json for a project that has none, by resolving package.json against the
+ * registry. Nothing is installed and no script from the project runs.
+ */
+export function generateLockfile(repoDir: string, timeoutMs = 180_000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      'npm',
+      ['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund', '--registry=https://registry.npmjs.org'],
+      { cwd: repoDir, timeout: timeoutMs, maxBuffer: 32 * 1024 * 1024 },
+      (err, _stdout, stderr) => (err ? reject(new Error(`npm could not resolve the dependencies: ${stderr.split('\n').find((l) => l.includes('ERR!')) ?? err.message}`)) : resolve()),
+    );
+  });
+}

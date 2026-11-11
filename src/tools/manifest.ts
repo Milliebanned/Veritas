@@ -69,6 +69,18 @@ export function parseInventory(manifest: Manifest, lock: Lockfile): Inventory {
   };
 }
 
+/** True when the project has a package.json but no lockfile this agent can read (none, or the old version 1 format). */
+export function needsLockfile(repoDir: string): boolean {
+  if (!existsSync(join(repoDir, 'package.json'))) return false;
+  const lockPath = join(repoDir, 'package-lock.json');
+  if (!existsSync(lockPath)) return true;
+  try {
+    return !(JSON.parse(readFileSync(lockPath, 'utf8')) as Lockfile).packages;
+  } catch {
+    return true;
+  }
+}
+
 export function readInventory(repoDir: string): Inventory {
   const manifestPath = join(repoDir, 'package.json');
   const lockPath = join(repoDir, 'package-lock.json');
